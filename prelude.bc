@@ -1,0 +1,233 @@
+#-- basic
+
+Const {
+	AIN inp, i2
+	AOUT out
+	POUT pout
+}
+
+Osc {
+	@enum SINE, SIN = 0, SQUARE, SAW, TRI
+	AIN detune, freq
+	AOUT out
+	PIN trigger
+}
+
+Env {
+	AIN inp
+	AOUT out
+	PIN trigger
+	PIN attack, decay, sustain, release
+}
+
+ADSR {
+	AIN inp
+	AOUT out
+	PIN trigger
+	PIN attack, decay, sustain, release
+}
+
+Gain {
+	AIN inp, gain
+	AOUT out
+}
+
+Delay {
+	AIN inp
+	AOUT out
+	AIN time
+}
+
+P2A {
+	PIN inp
+	AOUT out
+}
+
+Keyboard {
+	MIDIOUT out
+}
+
+Note2CV {
+	PIN inp
+	AOUT out
+}
+
+MidiArpeggio {
+	MIDIIN inp
+	PIN clock
+	AOUT out
+	PIN octaves
+	PIN mode # up, down, updown, downup, random
+}
+
+MidiTrigger {
+	@enum BOOL, RETRIG, COUNT
+	MIDIIN inp
+	POUT out
+	PIN mode
+}
+
+MidiNote {
+	@enum MAX, MIN, LAST, FIRST
+	MIDIIN inp
+	POUT out
+	PIN priority # min, max, first, last
+}
+
+Filter {
+	@enum LOWPASS, HIGHPASS, BANDPASS, LOWSHELF, HIGHSHELF, PEAKING, NOTCH, ALLPASS
+		, LP = 0, HP, BP, LS, HS
+	AIN inp
+	AOUT out
+	PIN type
+	AIN freq
+	AIN q
+	AIN detune
+}
+
+Clock {
+	POUT out
+}
+
+Dest {
+	AIN inp
+	AIN volume
+	AOUT out
+}
+
+Pan {
+	AIN inp
+	AIN pan
+	AOUT out
+}
+
+Noise {
+	AOUT out
+}
+
+# -- UI
+Pot {
+	POUT value
+	#@init caption
+}
+
+Slider {
+	POUT value
+	#@init pos
+}
+
+DropDown {
+	POUT value
+	#@init values
+}
+
+Scope {
+	AIN in_0-3
+}
+
+
+# -- Automation
+LFO {
+	PIN trigger
+	PIN freq
+	PIN form # sine, triangle, pulse
+	PIN skew
+	POUT out
+}
+
+Vec {
+	PIN inp
+	POUT pout
+	MIDIOUT midiOut
+}
+
+BinDemux {
+	PIN inp
+	POUT out_0-15
+}
+
+QDemux {
+	PIN inp
+	POUT out_0-15
+}
+
+Count {
+	PIN inp
+	PIN reset
+	POUT out
+}
+
+Curve {
+	PIN trigger
+	AOUT out
+}
+
+WebMidi {
+	MIDIOUT out
+}
+
+UIDial {
+	POUT out
+}
+
+UIDigits {
+	PIN inp
+}
+
+UIValue {
+	PIN inp
+}
+
+UILED {
+	PIN inp
+}
+
+UIButton {
+	POUT out
+}
+
+UIKeyboard {
+	MIDIIN inp
+	MIDIOUT out
+}
+
+UISpectrograph {
+	AIN inp
+}
+
+UISamplograph {
+	AIN inp
+}
+
+UIScope {
+	AIN inp
+}
+
+UISpectrum {
+	AIN inp
+}
+
+MidiHub {
+	@init filterProc
+	MIDIIN inp
+	MIDIOUT out
+}
+
+MidiExtract {
+	MIDIIN inp
+	POUT t, c, n, v
+}
+
+MidiPoly {
+	MIDIIN inp
+	MIDIOUT out_0-15
+}
+
+MidiCC {
+	MIDIIN inp
+	POUT out
+}
+
+MidiLog {
+	MIDIIN inp
+}

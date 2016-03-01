@@ -1,0 +1,87 @@
+<html>
+<head>
+	<title>test bc2</title>
+<link href="lib/bs/css/bootstrap.min.css" rel="stylesheet">
+<link href="main.css" rel="stylesheet" type="text/css" />
+<script src="lib/jquery-2.1.1.js"></script>
+<script src="lib/Tone.js"></script>
+<script src="lib/kefir.js"></script>
+<script src="lib/peg-0.9.0.js"></script>
+
+<script src="bccore.js"></script>
+<script src="bcpu.js"></script>
+<script src="bcmeta.js"></script>
+<script src="bcmidi.js"></script>
+<script src="bcui.js"></script>
+<!--script src="bcui.js"></script>
+<script src="bcabc.js"></script-->
+
+<script type="text/javascript">
+	"use strict";
+
+function showError(msg) {
+	$('#error').html($('#error').html() + msg + '<br />');
+}
+function run(actionName, source, parseFunc) {
+	try {
+		var result = parseFunc(source);
+		return result;
+	}
+	catch(e) {
+		console.error(e);
+		if (e.location && e.message) {
+			var msg = `Error ${actionName} at ${e.location.start.line}:${e.location.start.column}: ${e.message}`;
+			showError(msg);
+			throw msg;
+		} else {
+			var msg = `Error ${actionName}`;
+			if (e.message) msg += ': ' + e.message;
+			msg += '<br />See console';
+			showError(msg);
+			debugger;
+			parseFunc(source); // rethrow
+		}
+	}
+}
+Kefir.zip([
+	Kefir.fromPromise($.get('bc.pegjs')),
+	Kefir.fromPromise($.get('prelude.bc')),
+	Kefir.fromPromise($.get('overture.bc')),
+], (bc2, prelude, overture) => {
+	var grammar = bc2.replace(/\t*"include BCPU";\n?/,
+		Object.keys(BCPU.cls)
+			.map(k => 
+				`\t var ${k} = function (a, b, c, d, e) { var obj = new BCPU.cls.${k}(a, b, c, d, e); obj.type = '${k}'; return obj; }\n`
+			)
+			.join('')
+		+ Object.keys(BCPU.fun)
+			.map(k => 
+				`\t var ${k} = BCPU.fun.${k};\n`
+			)
+			.join('')
+	);
+	//console.log(grammar);
+	var parser = run('parsing grammar', grammar, s => PEG.buildParser(s));
+	// console.log(parser);
+	var preludeAST = run('parsing prelude', prelude, s => parser.parse(s));
+	console.log(preludeAST);
+	run('in prelude', preludeAST, s => s.toMeta());
+	var overtureAST = run('parsing overture', overture, s => parser.parse(s));
+	console.log(overtureAST);
+	run('in overture', overtureAST, s => s.toMeta());
+
+	BC.meta.compileAll();
+	BC.main = new BC.Main();
+	$('#UI').html(BC.main.getHTML());
+	BC.main.onStartUI();
+	BC.ui.start();
+	BC.core.start();
+}).onValue(() => {
+})
+</script>
+</head>
+<body>
+<div id="error"></div>
+<div id="UI"></div>
+</body>
+</html>

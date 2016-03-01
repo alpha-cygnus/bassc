@@ -1,0 +1,102 @@
+#include <ins/drums>
+
+{<a,b,c>d,e->f,g|[d*a,e*b + c]}
+
+Note2Detune {
+	PIN -> {n|(n - 69)*100} -> P2A -> AOUT
+}
+
+SimpleSine {
+	MIDIIN inp -> MidiNote -> Note2Detune ->[detune]Osc<SINE> o_0-5
+	inp -> MidiTrigger -> [trigger]ADSR<0.01, 0.1, 0.9, 1> adsr
+	o_0-5 => *0, *1, *1, *1, *1.0, *1.0 -> adsr -> AOUT out
+	-1200, 0, 10, -10, -20, 20 => [detune]o_0-5
+}
+
+Keyboard keys -> MidiHub allMidi
+UIKeyboard uiKeys -> allMidi -> uiKeys, MidiLog midiLog
+
+@UI uiKeys
+
+#allMidi -> SimpleSine -> *0.2 -> Dest
+
+# this should be equiv to what goes below
+#allMidi -> MidiPoly<4>[0-3] => SimpleSine ss0-3 -> *0.1 -> Dest
+
+allMidi -> MidiPoly<8> poly[0-7] => SimpleSine ss_0-7 -> *0.1 -> *preDest -> Dest
+
+@UI UILED led_0-7
+
+poly[0-7] => MidiTrigger mt_0-7 => led_0-7
+
+
+@UI UIButton btnPlay | UILED ledPlaying
+
+btnPlay -> ledPlaying
+
+Clock -> Count tickCount -> {t|floor(t/24)} step -> UIValue tv
+
+step -> <
+	0q0101
+	0q0200
+	0q0101
+	0q0200
+	0q1101
+	0q0200
+	0q0101
+	0q0202
+> -> {*} gate -> QDemux dmx[0-3] => {t|t/3} _0-3 => UILED dmx_0-3
+
+btnPlay -> gate
+btnPlay -> [reset]tickCount
+
+CHH {
+	@init a, v, c, dd
+	PIN trig -> Count -> [trigger]ADSR<0.01, 0.075, 0, 0.1> ampEnv
+	Noise osc -> Filter<HP> flt 
+		-> ampEnv -> *0.5 -> AOUT out
+
+	PIN<60> note -> Note2Detune -> [detune]flt
+	4800 ->[detune]flt
+}
+OHH {
+	PIN trig -> Count -> [trigger]ADSR<0.01, 0.5, 0, 0.1> ampEnv
+	Noise osc -> Filter<HP> flt 
+		-> ampEnv -> *0.5 -> AOUT out
+
+	PIN<60> note -> Note2Detune -> [detune]flt
+	4800 ->[detune]flt
+}
+BD {
+	PIN trig -> [trigger] ADSR<0.001, 0.09, 0.05, 0.3> freqEnv, ADSR<0.001, 0.2, 0, 0.2> ampEnv
+	freqEnv -> *1000 -> [freq]Osc<SINE> osc -> ampEnv -> *0.5 -> AOUT out
+	PIN<60> note -> Note2Detune ->[detune] osc
+}
+
+SN {
+	PIN trig -> BD bd, OHH hh -> AOUT out
+	48 -> [note]hh
+	48 -> [note]bd
+}
+
+dmx[0-3] => (BD -> *15), (SN -> *1), (CHH -> *2), (OHH -> *2) -> *0.2 -> preDest -> Dest
+
+@UI tv | dmx_0-3
+
+MidiPitchWheel {
+	MIDIIN -> MidiHub<{t|t == 'pitch'}> -> MidiExtract[v] -> POUT
+}
+MidiGetCC {
+	@init ccn
+	MIDIIN -> MidiHub<{t,n|t == 'cc' && n == ccn}> -> MidiExtract[v] -> POUT
+}
+
+{<x,y>a,b,c->d,e,f|[x,yy,xx]}
+
+MidiHub<{<cn>t,c,n,v|c == 0 && t in {on:1, off:1}}>
+
+MidiExtract[v] 
+
+@UI {UISpectrum sp | UISpectrograph spg} | {UIScope sc | UISamplograph sag}
+
+preDest -> spg, sag, sc, sp
