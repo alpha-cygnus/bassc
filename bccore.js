@@ -590,6 +590,22 @@ class Count extends BaseNode {
 	}
 }
 
+class PINLog extends BaseNode {
+	constructor(parent) {
+		super(...arguments);
+		this.inp = new PIN(this, []);
+		this.out = new POUT(this, []);
+		this.out.plugStream(this.inp.stream);
+		this.value;
+		this.inp.stream.onValue(v => {
+			if (v !== this.value) {
+				console.log(this.name || this.id, v);
+			}
+			this.value = v;
+		});
+	}
+}
+
 class Vec extends BaseNode {
 	constructor(parent, values) {
 		super(...arguments);
@@ -697,7 +713,7 @@ Object.assign(global.BC, {
 	Vec,
 	BinDemux,
 	QDemux,
-	
+	PINLog,
 	Proc,
 	Module,
 	

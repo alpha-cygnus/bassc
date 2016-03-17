@@ -38,6 +38,11 @@ Delay {
 	AIN time
 }
 
+PINLog {
+	PIN inp
+	POUT out
+}
+
 P2A {
 	PIN inp
 	AOUT out
