@@ -507,38 +507,47 @@
 	
 	var _sourceRqs = {};
 
-	function onSourceLoaded(name, source) {
+	function sourceLoaded(name, source) {
 		putSource(name, source);
 		delete _sourceRqs[name];
 		var t = getSourceType(name);
-		var res = [Kefir.constant(sources[name].source)];
+		// var res = [Kefir.constant(sources[name].source)];
 		if (t == 'bc') {
-			var re = /^@include\s+([\w\/\.]+)\s*$/mg;
+			var re = /^@include\s+([-\w\/\.]+)\s*$/mg;
 			var m;
 			while (m = re.exec(source)) {
-				res.push(requestSource(m[1]));
+				// res.push(
+				requestSource(m[1]); //);
 			}
 		}
-		if (res.length == 1) return res[0];
-		return Kefir.zip(res, v => v);
+		// if (res.length == 1) return res[0];
+		// return Kefir.zip(res, v => v);
 	}
 
 	function requestSource(name, params) {
 		if (_sourceRqs[name]) return _sourceRqs[name];
 		var rq;
 		if (sources[name]) {
-			// return Kefir.constant(sources[name].source);
-			rq = Kefir.constant(sources[name].source);
+			return Kefir.constant(sources[name].source);
+			// rq = Kefir.constant(sources[name].source);
 		} else {
 			rq = Kefir.fromPromise($.get(name));
 		}
-		rq = rq.flatMap(v => onSourceLoaded(name, v));
+		// rq = rq.flatMap(v => onSourceLoaded(name, v));
 		_sourceRqs[name] = rq;
 		return _sourceRqs[name];
 	}
 	
 	function onLoadAll(cb) {
-		Kefir.zip(Object.keys(_sourceRqs).map(i => _sourceRqs[i])).onValue(cb);
+		var ns = Object.keys(_sourceRqs);
+		var rqs = ns.map(i => _sourceRqs[i]);
+		if (!rqs.length) return cb();
+		Kefir.zip(rqs).onValue(ss => {
+			for (var i = 0; i < ss.length; i++) {
+				sourceLoaded(ns[i], ss[i]);
+			}
+			onLoadAll(cb);
+		});
 	}
 
 	
@@ -590,5 +599,6 @@
 		putSource,
 		onLoadAll,
 		_sourceRqs,
+		sourceLoaded,
 	}
 })(this);

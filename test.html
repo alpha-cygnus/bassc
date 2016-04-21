@@ -35,7 +35,7 @@ if (_urlParams.bcname || _urlParams.bc || _urlParams.bcc) {
 	var bcname = (_urlParams.bcname || 'temp') + '.bc';
 	var bc = _urlParams.bc;
 	if (bc) {
-		BCPU.putSource(bcname, bc);
+		BCPU.sourceLoaded(bcname, bc);
 	}
 	srcList.push(bcname);
 }
@@ -84,10 +84,12 @@ BCPU.onLoadAll(() => {
 	srcList.map(s => BCPU.processSource(s));
 	BC.meta.compileAll();
 	BC.main = new BC.Main();
-	$('#UI').html(BC.main.getHTML());
-	BC.main.onStartUI();
-	BC.ui.start();
-	BC.core.start();
+	$(() => {
+		$('#UI').html(BC.main.getHTML());
+		BC.main.onStartUI();
+		BC.ui.start();
+		BC.core.start();
+	})
 })
 </script>
 </head>
