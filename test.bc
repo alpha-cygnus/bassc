@@ -1,0 +1,21 @@
+MidiPitchWheel {
+	MIDIIN -> MidiHub<{t|t == 'pitch'}> -> MidiExtract[v] -> POUT
+}
+MidiGetCC {
+	@init ccn
+	MIDIIN -> MidiHub<{t,n|t == 'cc' && n == ccn}> -> MidiExtract[v] -> POUT
+}
+
+{<x,y>a,b,c->d,e,f|[x,yy,xx]}
+
+MidiHub<{<cn>t,c,n,v|c == 0 && t in {on:1, off:1}}>
+
+MidiExtract[v] 
+#include <drums.bc>
+
+{<a,b,c>d,e->f,g|[d*a,e*b + c]}
+
+MidiForIns {
+	MIDIIN inp -> (MidiNote -> Note2Detune -> AOUT detune), (MidiTrigger -> POUT trigger)
+}
+

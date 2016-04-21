@@ -8,7 +8,8 @@ S = head:statement? tail:(ST_SEP+ s:statement { return s; })* ws { return Main([
 
 statement = module
 	/ chain
-	/ layout:layout
+	/ layout
+	/ include
 
 module
 	= name:Id COPEN
@@ -35,6 +36,10 @@ l_decls = head:l_decl tail:(PIPE d:l_decl { return d })* { return [head].concat(
 l_decl
 	= COPEN decls:l_decls CCLOSE { return LayoutSub(decls); }
 	/ decl:declRef { return LayoutDecl(decl); }
+
+include = INC name:$((FILESYM+ '/')* FILESYM+ '.' ('bc' / 'mid' / 'midi' / 'track')) {
+	return Include(name);
+}
 
 chain 
 	= head:point links:(a:arrow p:point { return ChainLink(a, p); })* {
@@ -151,7 +156,7 @@ space0 = [ \t]
 comment = '#' [^\r\n]*
 ws "" = (space/comment)*
 ws0 "" = (space0/comment)*
-EOL = [\r\n]+
+EOL = [\r\n]
 COPEN = ws '{' ws0
 CCLOSE = ws '}' ws0
 UPPER = [A-Z]
@@ -159,6 +164,7 @@ LOWER = [a-z]
 LETTER = UPPER / LOWER
 DIGIT = [0-9]
 IDSYM = LETTER / DIGIT
+FILESYM = IDSYM / '-'
 Id "Identifier" = ws id:$(UPPER IDSYM*) ws0 { return id; }
 id "ident" = ws id:$(LOWER IDSYM*) ws0 { return id; }
 INT "integer" = ws num:$(('+'/'-')? DIGIT+) ws0 { return parseInt(num, 10); }
@@ -188,6 +194,7 @@ NOTE = ws n:$([A-H] [#-b]? DIGIT?) ws0 { return n }
 TSEQ = ws s:$([x.]+) ws0 { return s.split('').map(c => c == 'x' ? 1 : 0) }
 ENUM = ws '@enum' !IDSYM ws0
 UI = ws '@' ('ui'/'UI') !IDSYM ws0
+INC = ws '@' ('include') !IDSYM space0+
 INIT = ws '@' 'init' !IDSYM ws0
 GLOBAL = ws '@' 'global' !IDSYM ws0
 AGR = ws a:[*_^+] ws0 { return a }

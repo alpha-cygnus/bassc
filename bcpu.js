@@ -127,6 +127,15 @@
 			return this.decl.toMeta(_cc, {}).ids;
 		}
 	}
+	class Include extends SyntaxElem {
+		constructor(name) {
+			super();
+			this.name = name;
+		}
+		toMeta() {
+			processSource(this.name);
+		}
+	}
 	class Chain extends SyntaxElem {
 		constructor(head, links) {
 			super();
@@ -420,6 +429,118 @@
 			}
 		}
 	}
+
+	function showError(msg) {
+		console.error(msg);
+		if (global.BCPU.onShowError) global.BCPU.onShowError(msg);
+	}
+	
+	function run(actionName, source, parseFunc) {
+		try {
+			var result = parseFunc(source);
+			return result;
+		}
+		catch(e) {
+			console.error(e);
+			if (e.location && e.message) {
+				var msg = `Error ${actionName} at ${e.location.start.line}:${e.location.start.column}: ${e.message}`;
+				showError(msg);
+				throw msg;
+			} else {
+				var msg = `Error ${actionName}`;
+				if (e.message) msg += ': ' + e.message;
+				msg += '<br />See console';
+				showError(msg);
+				debugger;
+				parseFunc(source); // rethrow
+			}
+		}
+	}
+	
+	var grammars = {};
+	var parsers = {};
+	
+	function addGrammar(t, source) {
+		var grammar = source.replace(/\t*"include BCPU";\n?/,
+			Object.keys(BCPU.cls)
+				.map(k => 
+					`\tvar ${k} = function (a, b, c, d, e) { var obj = new BCPU.cls.${k}(a, b, c, d, e); obj.type = '${k}'; return obj; }\n`
+				)
+				.join('')
+			+ Object.keys(BCPU.fun)
+				.map(k => 
+					`\tvar ${k} = BCPU.fun.${k};\n`
+				)
+				.join('')
+		);
+		var parser = run('parsing ' + t + ' grammar ', grammar, s => PEG.buildParser(s));
+		grammars[t] = grammar;
+		parsers[t] = parser;
+		return parser;
+	}
+	
+	var sources = {};
+	
+	function getSourceType(name) {
+		var m;
+		if (m = name.match(/\.(\w{1,4})$/)) return m[1];
+		return '';
+	}
+	
+	function putSource(name, source) {
+		sources[name] = { source };
+	}
+
+	function processSource(name) {
+		if (sources[name].processed) return;
+		var t = getSourceType(name);
+		var m;
+		if (m = name.match(/(\w+)\.pegjs$/)) {
+			return addGrammar(m[1], sources[name].source);
+		}
+		var ast = run('parsing ' + name, sources[name].source, s => parsers[t].parse(s));
+		console.log('parsed ' + name, ast);
+		run('in ' + name, ast, s => s.toMeta());
+		sources[name].processed = true;
+		return ast;
+	}
+	
+	var _sourceRqs = {};
+
+	function onSourceLoaded(name, source) {
+		putSource(name, source);
+		delete _sourceRqs[name];
+		var t = getSourceType(name);
+		var res = [Kefir.constant(sources[name].source)];
+		if (t == 'bc') {
+			var re = /^@include\s+([\w\/\.]+)\s*$/mg;
+			var m;
+			while (m = re.exec(source)) {
+				res.push(requestSource(m[1]));
+			}
+		}
+		if (res.length == 1) return res[0];
+		return Kefir.zip(res, v => v);
+	}
+
+	function requestSource(name, params) {
+		if (_sourceRqs[name]) return _sourceRqs[name];
+		var rq;
+		if (sources[name]) {
+			// return Kefir.constant(sources[name].source);
+			rq = Kefir.constant(sources[name].source);
+		} else {
+			rq = Kefir.fromPromise($.get(name));
+		}
+		rq = rq.flatMap(v => onSourceLoaded(name, v));
+		_sourceRqs[name] = rq;
+		return _sourceRqs[name];
+	}
+	
+	function onLoadAll(cb) {
+		Kefir.zip(Object.keys(_sourceRqs).map(i => _sourceRqs[i])).onValue(cb);
+	}
+
 	
 	global.BCPU = {
 		cls: {
@@ -435,6 +556,7 @@
 			Layout,
 			LayoutDecl,
 			LayoutSub,
+			Include,
 			Point,
 			Node,
 			Decl,
@@ -459,5 +581,14 @@
 		},
 		location: () => '?', // stub, to be filled by parser
 		error: () => '!', // stub, to be filled by parser
+		grammars,
+		parsers,
+		sources,
+		requestSource,
+		addGrammar,
+		processSource,
+		putSource,
+		onLoadAll,
+		_sourceRqs,
 	}
 })(this);

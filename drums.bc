@@ -1,0 +1,28 @@
+CHH {
+	@init a, v, c, dd
+	PIN trig -> Count -> [trigger]ADSR<0.01, 0.075, 0, 0.1> ampEnv
+	Noise osc -> Filter<HP> flt 
+		-> ampEnv -> *0.5 -> AOUT out
+
+	PIN<60> note -> Note2Detune -> [detune]flt
+	4800 ->[detune]flt
+}
+OHH {
+	PIN trig -> Count -> [trigger]ADSR<0.01, 0.5, 0, 0.1> ampEnv
+	Noise osc -> Filter<HP> flt 
+		-> ampEnv -> *0.5 -> AOUT out
+
+	PIN<60> note -> Note2Detune -> [detune]flt
+	4800 ->[detune]flt
+}
+BD {
+	PIN trig -> [trigger] ADSR<0.001, 0.09, 0.05, 0.3> freqEnv, ADSR<0.001, 0.2, 0, 0.2> ampEnv
+	freqEnv -> *1000 -> [freq]Osc<SINE> osc -> ampEnv -> *0.5 -> AOUT out
+	PIN<60> note -> Note2Detune ->[detune] osc
+}
+
+SN {
+	PIN trig -> BD bd, OHH hh -> AOUT out
+	48 -> [note]hh
+	48 -> [note]bd
+}
