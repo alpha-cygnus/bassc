@@ -334,3 +334,24 @@ div.UI {
 .bc_page {
 	display: none;
 }
+
+#srcList {
+	list-style: none;
+	margin: 0px;
+	padding: 0px;
+}
+
+#srcList li {
+	cursor: pointer;
+	padding-left: 4px;
+	padding-right: 4px;
+}
+
+#srcList li:hover {
+	background: #CCC;
+}
+
+#srcList li.current {
+	color: #FFF;
+	background: #000;
+}

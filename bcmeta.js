@@ -287,7 +287,7 @@ class MetaModule extends Meta {
 				if (n.type == 'Const') {
 					label = n.params.join(', ');
 				} else {
-					var t = n.type;
+					var t = n.type.name;
 					label = t.typeLabel || t;
 					if (n.params && n.params.length) {
 						label += '(' + n.params.join(', ') + ')';
@@ -312,7 +312,7 @@ class MetaModule extends Meta {
 		res.push('};');
 		for (var ln in this.links) {
 			var li = this.links[ln];
-			res.push(`${dotName(li.n0)}:${dotName(li.e0)} -> ${dotName(li.n1)}:${dotName(li.e1)};`);
+			res.push(`${dotName(li.n0)}:${dotName(li.p0)} -> ${dotName(li.n1)}:${dotName(li.p1)};`);
 		}
 		res.push('}');
 		return res.join('\n');

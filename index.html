@@ -1,8 +1,255 @@
+<!DOCTYPE html>
 <html>
 <head>
-	<title>Bass C</title>
+<title>Bass C</title>
+<link href="lib/bs/css/bootstrap.min.css" rel="stylesheet">
+<link href="lib/cm/codemirror.css" rel="stylesheet">
+<link href="main.css" rel="stylesheet" type="text/css" />
+<script src="lib/jquery-2.1.1.js"></script>
+<script src="lib/Tone.js"></script>
+<script src="lib/kefir.js"></script>
+<script src="lib/peg-0.9.0.js"></script>
+<script src="lib/rawdeflate.js"></script>
+<script src="lib/rawinflate.js"></script>
+
+<script src="bccore.js"></script>
+<script src="bcpu.js"></script>
+<script src="bcmeta.js"></script>
+<script src="bcmidi.js"></script>
+<script src="bcui.js"></script>
+
+<script src="simple64.js"></script>
+
+<script src="lib/cm/codemirror.js"></script>
+
+<script>
+"use strict";
+
+var _urlParams = window.location.search.substr(1).split('&').filter(x => x).map(x => x.split('=')).reduce((res, x) => (res[x[0]] = decodeURIComponent(x[1]), res), {});
+
+function showError(msg) {
+    $('#error').html($('#error').html() + msg + '<br />');
+}
+
+BCPU.onShowError = showError;
+
+function saveLocal(filename, text) {
+    var pom = document.createElement('a');
+    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    pom.setAttribute('download', filename);
+
+    if (document.createEvent) {
+        var event = document.createEvent('MouseEvents');
+        event.initEvent('click', true, true);
+        pom.dispatchEvent(event);
+    }
+    else {
+        pom.click();
+    }
+}
+
+BCPU.requestSource('bc.pegjs', { readonly: true, from: 'server' });
+BCPU.requestSource('prelude.bc', { readonly: true, from: 'server' });
+BCPU.requestSource('overture.bc', { readonly: true, from: 'server' });
+
+var bcname;
+
+if (_urlParams.bcname || _urlParams.bc || _urlParams.bcc) {
+    bcname = (_urlParams.bcname || '_draft.bc');
+    var bc = _urlParams.bc;
+    if (bc) {
+        BCPU.sourceLoaded(bcname, bc, 'url');
+    } else {
+        BCPU.requestSource(bcname, {});
+    }
+}
+
+var _currentSourceName;
+
+function setCurrentSource(name) {
+    if (window.cmBcCode) cmBcCode.setValue(BCPU.sources[name].data);
+    _currentSourceName = name;
+    $('#srcList .current').removeClass('current');
+    $(`#srcList li[data-name='${name}']`).addClass('current');
+}
+
+BCPU.onLoadAll(() => {
+    BCPU.processSource('bc.pegjs');
+    BCPU.processSource('prelude.bc');
+    BCPU.processSource('overture.bc');
+    if (bcname) {
+        BCPU.processSource(bcname);
+    }
+    BC.meta.compileAll();
+    BC.main = new BC.Main();
+    $(() => {
+        $('#UI').html(BC.main.getHTML());
+        BC.main.onStartUI();
+        BC.ui.start();
+        BC.core.start();
+
+        for (var s in BCPU.sources) {
+            let name = s;
+            $('<li>')
+                .attr('data-name', name)
+                .html(name)
+                .click(function(e) {
+                    setCurrentSource(name);
+                })
+                .appendTo('ul#srcList');
+        }
+        
+        //$('#btnSaveToURL').click();
+        
+        setCurrentSource(bcname || 'overture.bc');
+        setPage(location.hash.substr(1));
+    })
+});
+
+function stopItAll() {
+    BC.core.stop();
+    window.mainVolume.value = 0;
+    return false;
+}
+
+function saveToURL() {
+    var bcc = BCPU.compress(cmBcCode.getValue());
+    var search = `?bcname=${_currentSourceName}&bcc=${bcc}`;
+    window.location.search = search;
+    return false;
+}
+
+var bcPagesInfo = {
+    code: {
+        init() {
+            window.cmBcCode = CodeMirror.fromTextArea(document.getElementById("bccode"), {
+                lineNumbers: true,
+                mode: "htmlmixed"
+            });
+            setCurrentSource(_currentSourceName);
+        }
+    },
+    ui: {
+        init() {
+        }
+    },
+    dia: {
+        init() {
+            $('#ifrVis').attr('src', 'vis.html?Main');
+        }
+    },
+
+}
+
+function setPage(page) {
+    var pages = {
+        dia: 'dia',
+        ui: 'ui',
+        code: 'code',
+        params: 'params',
+        settings: 'params',
+        '': 'ui',
+    };
+    var page = pages[page] || pages[''];
+    $('.bc_pages li').removeClass('active');
+    $('#li_' + page).addClass('active');
+    $('div.bc_page').hide();
+    $('#page_' + page).show();
+    bcKeyboardEnabled = (page == 'ui');
+    var pinfo = bcPagesInfo[page];
+    if (pinfo && pinfo.init && !pinfo.inited) {
+        pinfo.init();
+        pinfo.inited = true;
+    }
+}
+</script>
+
 </head>
 <body>
-<h1>TEST</h1>
+    <nav class="navbar navbar-default navbar-static-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1"
+                viewBox="0 0 300 300" preserveAspectRatio="xMidYMid slice"
+                style="width:50; height:50; margin: 0px 10px; padding: 5px;"
+                class="navbar-brand" 
+            >
+                <rect x="0" y="0" width="300" height="300" fill="none" stroke="none"/>
+                <g transform="scale(0.1) translate(-1100 -6100)" stroke="black">
+                    <g stroke-width="60" stroke="#000">
+                        <path d="M 100,7559 L 5000,7559"/>
+                        <path d="M 100,8740 L 5000,8740"/>
+                        <path d="M 100,8149 L 5000,8149"/>
+                        <path d="M 100,6968 L 5000,6968"/>
+                        <path d="M 100,6378 L 5000,6378"/>
+                    </g>
+                    <path d="M 1239,8245 C 1397,8138 1515,8057 1591,8001 C 1667,7946 1747,7877 1829,7795 C 1911,7713 1980,7620 2036,7517 C 2080,7441 2118,7353 2149,7253 C 2180,7154 2196,7058 2199,6967 C 2199,6882 2188,6801 2165,6725 C 2143,6648 2105,6585 2051,6534 C 1997,6484 1927,6459 1840,6459 C 1756,6459 1677,6476 1603,6509 C 1530,6543 1478,6597 1449,6673 C 1449,6680 1445,6689 1439,6702 C 1441,6718 1449,6730 1464,6739 C 1479,6748 1492,6752 1504,6752 C 1510,6752 1527,6749 1553,6743 C 1580,6737 1602,6733 1620,6733 C 1673,6733 1720,6752 1763,6789 C 1805,6826 1826,6871 1826,6924 C 1826,6962 1815,6998 1794,7031 C 1773,7064 1744,7091 1707,7110 C 1670,7130 1629,7139 1585,7139 C 1505,7139 1437,7115 1381,7066 C 1326,7016 1298,6953 1298,6874 C 1298,6773 1329,6686 1390,6612 C 1452,6538 1530,6483 1626,6446 C 1721,6408 1817,6390 1915,6390 C 2022,6390 2124,6417 2219,6472 C 2315,6526 2390,6601 2446,6694 C 2502,6788 2531,6888 2531,6996 C 2531,7188 2467,7366 2339,7531 C 2211,7696 2053,7839 1864,7961 C 1738,8044 1534,8156 1253,8297 L 1239,8245 z M 2628,6698 C 2628,6662 2641,6632 2667,6608 C 2692,6583 2723,6571 2760,6571 C 2792,6571 2822,6585 2849,6612 C 2876,6638 2889,6669 2889,6703 C 2889,6739 2875,6770 2849,6795 C 2821,6819 2790,6831 2755,6831 C 2718,6831 2688,6819 2664,6792 C 2640,6766 2628,6735 2628,6698 z M 2628,7222 C 2628,7186 2641,7155 2665,7131 C 2690,7106 2721,7094 2760,7094 C 2792,7094 2821,7107 2849,7134 C 2875,7161 2889,7190 2889,7222 C 2889,7261 2876,7292 2851,7317 C 2825,7342 2795,7355 2760,7355 C 2721,7355 2690,7342 2665,7318 C 2641,7294 2628,7262 2628,7222 z"/>
+                </g>
+                <g transform="translate(180 -145)">
+                    <path xmlns="http://www.w3.org/2000/svg" d="M90.5625 320.9062 Q90.5625 333.7031 76.0781 340.4531 Q64.9688 345.5156 50.3438 345.5156 Q34.7344 345.5156 23.7656 340.3125 Q9.4219 333.4219 9.4219 319.6406 Q9.4219 307.125 23.7656 300.5156 Q35.0156 295.3125 49.2188 295.3125 Q64.5469 295.3125 75.7969 300.5156 Q90.5625 307.4062 90.5625 320.9062 ZM64.2656 327.2344 Q64.2656 317.9531 60.3281 310.5 Q55.4062 301.2188 46.9688 301.2188 Q35.4375 301.2188 35.4375 313.0312 Q35.4375 322.1719 39.5156 330.0469 Q44.4375 339.75 52.5938 339.75 Q64.2656 339.75 64.2656 327.2344 Z" stroke="none"/>
+                </g>
+            </svg>
+          <!--a class="navbar-brand" href="#">Bass C</a-->
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav bc_pages">
+            <li id="li_ui"><a href="#ui" onclick="setPage('ui')">UI</a></li>
+            <li id="li_dia"><a href="#dia" onclick="setPage('dia')">Diagram</a></li>
+            <li id="li_code"><a href="#code" onclick="setPage('code')">Code</a></li>
+            <li id="li_params"><a href="#params" onclick="setPage('params')">Settings</a></li>
+          </ul>
+          <!--button type="button" class="nav navbar-nav navbar-right btn btn-danger" onclick="return stopItAll();">PANIC!</button-->
+          <ul class="nav navbar-nav navbar-right">
+            <li class="active" role="presentation"><a href="#" onclick="return stopItAll();" style="font-weight: bold;">PANIC!</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container" id="error"></div>
+
+    <div class="container bc_page" id="page_ui">
+        <div id="UI"></div>
+    </div>
+    <div class="container bc_page" id="page_dia">
+        <div class="row" style="height:400px">
+            <iframe id="ifrVis" style="width:100%;height:100%" frameborder="0"></iframe>
+        </div>
+    </div>
+    <div class="container bc_page" id="page_code">
+          <div class="col-lg-2">
+            <ul id="srcList">
+            </ul>
+          </div>
+          <div class="col-lg-10">
+            <form>
+              <!--div class="form-group">
+                <input type="text" class="form-control" id="txtBCName" placeholder="name">
+              </div-->
+              <div class="form-group">
+                <textarea id="bccode" class="form-control" name="bccode" rows="25"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="fileInput">Load from file</label>
+                <input type="file" id="fileInput">
+              </div>
+              <button id="btnSaveToLocal" type="submit" class="btn btn-default">Save To LocalStorage</button>
+              <button id="btnSaveToURL" onclick="return saveToURL();" class="btn btn-default">Save To URL</button>
+            </form>
+            <!--textarea id="bccode" class="col-lg-12">
+            </textarea-->
+          </div>
+        </div>
+    </div>
+    <div class="container bc_page" id="page_params">
+        PARAMS
+    </div>
+
 </body>
 </html>

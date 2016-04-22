@@ -487,8 +487,11 @@
 		return '';
 	}
 	
-	function putSource(name, source) {
-		sources[name] = { source };
+	function putSource(name, data) {
+		if (!sources[name]) sources[name] = {
+			loaded: true,
+		}
+		sources[name].data = data;
 	}
 
 	function processSource(name) {
@@ -496,51 +499,83 @@
 		var t = getSourceType(name);
 		var m;
 		if (m = name.match(/(\w+)\.pegjs$/)) {
-			return addGrammar(m[1], sources[name].source);
+			return addGrammar(m[1], sources[name].data);
 		}
-		var ast = run('parsing ' + name, sources[name].source, s => parsers[t].parse(s));
+		var ast = run('parsing ' + name, sources[name].data, s => parsers[t].parse(s));
 		console.log('parsed ' + name, ast);
 		run('in ' + name, ast, s => s.toMeta());
 		sources[name].processed = true;
 		return ast;
 	}
 	
-	var _sourceRqs = {};
-
-	function sourceLoaded(name, source) {
-		putSource(name, source);
-		delete _sourceRqs[name];
+	function sourceLoaded(name, data, from) {
+		putSource(name, data);
+		sources[name].rq = null;
+		sources[name].loaded = true;
+		if (from) sources[name].from = from;
 		var t = getSourceType(name);
-		// var res = [Kefir.constant(sources[name].source)];
 		if (t == 'bc') {
 			var re = /^@include\s+([-\w\/\.]+)\s*$/mg;
 			var m;
-			while (m = re.exec(source)) {
-				// res.push(
+			while (m = re.exec(data)) {
 				requestSource(m[1]); //);
 			}
 		}
-		// if (res.length == 1) return res[0];
-		// return Kefir.zip(res, v => v);
+	}
+	
+	function compress(s) {
+		var zipped = RawDeflate.deflate(s, 9);  
+		return Simple64.encode(zipped);
+	}
+	function decompress(s) {
+		var zipped = Simple64.decode(s);
+		return RawDeflate.inflate(zipped);
 	}
 
-	function requestSource(name, params) {
-		if (_sourceRqs[name]) return _sourceRqs[name];
-		var rq;
-		if (sources[name]) {
-			return Kefir.constant(sources[name].source);
-			// rq = Kefir.constant(sources[name].source);
-		} else {
-			rq = Kefir.fromPromise($.get(name));
+	function localKey(name) {
+		return 'bcsrc:' + name;
+	}
+	function localGet(name) {
+		var cd = localStorage[localKey(name)];
+		if (cd) {
+			return decompress(cd);
 		}
-		// rq = rq.flatMap(v => onSourceLoaded(name, v));
-		_sourceRqs[name] = rq;
-		return _sourceRqs[name];
+	}
+	function localPut(name) {
+		if (!sources[name]) return;
+		localStorage[localKey(name)] = compress(sources[name].data);
+	}
+	function localDelete(name) {
+		delete localStorage[localKey(name)];
+	}
+
+	function requestSource(name, params = {}) {
+		var rq;
+		if (!sources[name]) {
+			sources[name] = {
+				loaded: false,
+			}
+		}
+		if (sources[name].loaded) {
+			return Kefir.constant(sources[name].data);
+		}
+		if (sources[name].rq) {
+			return sources[name].rq;
+		}
+		var data;
+		if (params.from != 'server' && (data = localGet(name))) {
+			return sourceLoaded(name, data, 'localStorage');
+		}
+		rq = Kefir.fromPromise($.get(name));
+		sources[name].from = 'server';
+		sources[name].rq = rq;
+		return rq;
 	}
 	
 	function onLoadAll(cb) {
-		var ns = Object.keys(_sourceRqs);
-		var rqs = ns.map(i => _sourceRqs[i]);
+		var ns = [];
+		for (var n in sources) if (sources[n].rq) ns.push(n);
+		var rqs = ns.map(n => sources[n].rq);
 		if (!rqs.length) return cb();
 		Kefir.zip(rqs).onValue(ss => {
 			for (var i = 0; i < ss.length; i++) {
@@ -598,7 +633,12 @@
 		processSource,
 		putSource,
 		onLoadAll,
-		_sourceRqs,
 		sourceLoaded,
+		compress,
+		decompress,
+		localKey,
+		localDelete,
+		localPut,
+		localGet,
 	}
 })(this);
