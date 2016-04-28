@@ -442,12 +442,12 @@ class UISpectrograph extends UIBasis {
 		this.inp.bind(this.lyser);
 		this.dataArray = new Uint8Array(this.lyser.frequencyBinCount);
 		this.width = this.dataArray.length;
-		this.height = 512;
+		this.height = 256;
 		this.mode = 'exp';
 	}
 	getHTML() {
 		return `<canvas class="UI UISpectrograph UICanvas" id="${this.getId()}"
-			style="width:512px; height:256px;"
+			style="width:512px; height:128px;"
 			width="${this.width}" height="${this.height}"></canvas>`;
 	}
 	onStartUI() {
@@ -623,7 +623,7 @@ class UISamplograph extends UIBasis {
 	}
 	getHTML() {
 		return `<canvas class="UI UISpectrograph UICanvas" id="${this.getId()}"
-			style="width:256px; height:128px"
+			style="width:512px; height:128px"
 			width="${this.width}" height="${this.height}"></canvas>`;
 	}
 	onStartUI() {
@@ -686,7 +686,7 @@ class UIScope extends UIBasis {
 	}
 	getHTML() {
 		return `<canvas class="UI UISpectrograph UICanvas" id="${this.getId()}"
-			style="width: 256px; height:128px;"
+			style="width: 512px; height:128px;"
 			width="${this.width}" height="${this.height}"></canvas>`;
 	}
 	onStartUI() {

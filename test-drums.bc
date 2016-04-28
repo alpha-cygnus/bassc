@@ -20,6 +20,6 @@ btnPlay -> [reset]tickCount
 
 @include drums.bc
 
-dmx[0-3] => (BD -> *15), (SN -> *1), (CHH -> *2), (OHH -> *2) -> *0.2 -> preDest -> Dest
+dmx[0-3] => (BD -> *15), (SN -> *1), (CHH -> *2), (OHH -> *2) -> *0.2 -> preDest
 
 @UI tv | dmx_0-3

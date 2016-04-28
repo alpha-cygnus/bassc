@@ -4,6 +4,7 @@
 <title>Bass C</title>
 <link href="lib/bs/css/bootstrap.min.css" rel="stylesheet">
 <link href="lib/cm/codemirror.css" rel="stylesheet">
+<link href="lib/cm/theme/bassc.css" rel="stylesheet">
 <link href="main.css" rel="stylesheet" type="text/css" />
 <script src="lib/jquery-2.1.1.js"></script>
 <script src="lib/Tone.js"></script>
@@ -22,10 +23,20 @@
 
 <script src="lib/cm/codemirror.js"></script>
 
+<script src="lib/cm/mode/javascript.js"></script>
+<script src="lib/cm/mode/pegjs.js"></script>
+
 <script>
 "use strict";
 
-var _urlParams = window.location.search.substr(1).split('&').filter(x => x).map(x => x.split('=')).reduce((res, x) => (res[x[0]] = decodeURIComponent(x[1]), res), {});
+var _urlParams = window.location.search.substr(1).split('&')
+    .filter(x => x).map(x => x.split('='))
+    .reduce((res, x) => {
+        var [n, v] = x.map(decodeURIComponent);
+        res[n] = res[n] || [];
+        res[n].push(v);
+        return res;
+    }, {});
 
 function showError(msg) {
     $('#error').html($('#error').html() + msg + '<br />');
@@ -52,16 +63,25 @@ BCPU.requestSource('bc.pegjs', { readonly: true, from: 'server' });
 BCPU.requestSource('prelude.bc', { readonly: true, from: 'server' });
 BCPU.requestSource('overture.bc', { readonly: true, from: 'server' });
 
-var bcname;
+var loadList = [];
 
-if (_urlParams.bcname || _urlParams.bc || _urlParams.bcc) {
-    bcname = (_urlParams.bcname || '_draft.bc');
-    var bc = _urlParams.bc;
-    if (bc) {
-        BCPU.sourceLoaded(bcname, bc, 'url');
-    } else {
-        BCPU.requestSource(bcname, {});
+if (_urlParams.load) {
+    loadList = _urlParams.load.map(x => x.split(/[+,\s]+/)).reduce((res, x) => res.concat(x), []).map(n => n.match(/\.\w{2,4}$/) ? n : n + '.bc');
+    for (var name of loadList) {
+        if (_urlParams[name]) {
+            var data = BCPU.decompress(_urlParams[name][0]);
+            BCPU.sourceLoaded(name, data, 'url');
+        } else {
+            BCPU.requestSource(name, {});
+        }
     }
+}
+
+if (_urlParams.bc) {
+    var name = '_sketch.bc';
+    loadList.push(name);
+    var data = BCPU.decompress(_urlParams.bc[0]);
+    BCPU.sourceLoaded(name, data, 'url');
 }
 
 var _currentSourceName;
@@ -73,13 +93,19 @@ function setCurrentSource(name) {
     $(`#srcList li[data-name='${name}']`).addClass('current');
 }
 
+var _currentDiaClass;
+function setCurrentDiaClass(name) {
+    _currentDiaClass = name;
+    $('#clsList .current').removeClass('current');
+    $(`#clsList li[data-name='${name}']`).addClass('current');
+    $('#ifrVis').attr('src', 'dia.html?' + name);
+}
+
 BCPU.onLoadAll(() => {
     BCPU.processSource('bc.pegjs');
     BCPU.processSource('prelude.bc');
     BCPU.processSource('overture.bc');
-    if (bcname) {
-        BCPU.processSource(bcname);
-    }
+    loadList.map(name => BCPU.processSource(name));
     BC.meta.compileAll();
     BC.main = new BC.Main();
     $(() => {
@@ -99,9 +125,22 @@ BCPU.onLoadAll(() => {
                 .appendTo('ul#srcList');
         }
         
+        for (var s in BC.meta.data) {
+            let name = s;
+            $('<li>')
+                .attr('data-name', name)
+                .html(name)
+                .click(function(e) {
+                    setCurrentDiaClass(name);
+                })
+                .appendTo('ul#clsList');
+        }
+        
         //$('#btnSaveToURL').click();
         
-        setCurrentSource(bcname || 'overture.bc');
+        setCurrentDiaClass('Main');
+        //setCurrentSource(loadList.length > 0 ? loadList[loadList.length - 1] : 'overture.bc');
+        setCurrentSource('bc.pegjs');
         setPage(location.hash.substr(1));
     })
 });
@@ -113,8 +152,10 @@ function stopItAll() {
 }
 
 function saveToURL() {
-    var bcc = BCPU.compress(cmBcCode.getValue());
-    var search = `?bcname=${_currentSourceName}&bcc=${bcc}`;
+    var cc = BCPU.compress(cmBcCode.getValue());
+    _urlParams[_currentSourceName] = [cc];
+    var search = Object.keys(_urlParams).map(n => _urlParams[n].map(v => [n, v].map(encodeURIComponent).join('=')).join('&')).join('&'); //.map(v => [n, v].map(encodeURIComponent)).join('&')).join('&');
+    console.log(search);
     window.location.search = search;
     return false;
 }
@@ -124,7 +165,8 @@ var bcPagesInfo = {
         init() {
             window.cmBcCode = CodeMirror.fromTextArea(document.getElementById("bccode"), {
                 lineNumbers: true,
-                mode: "htmlmixed"
+                mode: 'pegjs',
+                theme: 'bassc',
             });
             setCurrentSource(_currentSourceName);
         }
@@ -135,7 +177,8 @@ var bcPagesInfo = {
     },
     dia: {
         init() {
-            $('#ifrVis').attr('src', 'vis.html?Main');
+            //$('#ifrVis').attr('src', 'vis.html?Main');
+            setCurrentDiaClass(_currentDiaClass);
         }
     },
 
@@ -153,8 +196,8 @@ function setPage(page) {
     var page = pages[page] || pages[''];
     $('.bc_pages li').removeClass('active');
     $('#li_' + page).addClass('active');
-    $('div.bc_page').hide();
-    $('#page_' + page).show();
+    $('div.bc_page').height('0px').hide();
+    $('#page_' + page).show().height($(window).height() - $('.navbar').height() - 24);
     bcKeyboardEnabled = (page == 'ui');
     var pinfo = bcPagesInfo[page];
     if (pinfo && pinfo.init && !pinfo.inited) {
@@ -212,39 +255,48 @@ function setPage(page) {
       </div>
     </nav>
 
-    <div class="container" id="error"></div>
-
     <div class="container bc_page" id="page_ui">
         <div id="UI"></div>
     </div>
     <div class="container bc_page" id="page_dia">
-        <div class="row" style="height:400px">
-            <iframe id="ifrVis" style="width:100%;height:100%" frameborder="0"></iframe>
+        <div class="row body">
+            <div class="col-lg-2 left-side">
+                <ul class="list" id="clsList">
+                </ul>
+            </div>
+            <div class="col-lg-10 right-side">
+                <iframe id="ifrVis" style="width:100%;height:100%" frameborder="0"></iframe>
+            </div>
         </div>
     </div>
     <div class="container bc_page" id="page_code">
-          <div class="col-lg-2">
-            <ul id="srcList">
-            </ul>
-          </div>
-          <div class="col-lg-10">
-            <form>
-              <!--div class="form-group">
-                <input type="text" class="form-control" id="txtBCName" placeholder="name">
-              </div-->
-              <div class="form-group">
-                <textarea id="bccode" class="form-control" name="bccode" rows="25"></textarea>
+        
+        <div class="container" id="error"></div>
+
+        <div class="row body">
+            <div class="col-lg-2 left-side">
+                <ul class="list" id="srcList">
+                </ul>
+            </div>
+            <div class="col-lg-10 right-side">
+                <form>
+                  <!--div class="form-group">
+                    <input type="text" class="form-control" id="txtBCName" placeholder="name">
+                  </div-->
+                  <div class="form-group">
+                    <textarea id="bccode" class="form-control" name="bccode" rows="25"></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label for="fileInput">Load from file</label>
+                    <input type="file" id="fileInput">
+                  </div>
+                  <button id="btnSaveToLocal" type="submit" class="btn btn-default">Save To LocalStorage</button>
+                  <button id="btnSaveToURL" onclick="return saveToURL();" class="btn btn-default">Save To URL</button>
+                </form>
+                <!--textarea id="bccode" class="col-lg-12">
+                </textarea-->
               </div>
-              <div class="form-group">
-                <label for="fileInput">Load from file</label>
-                <input type="file" id="fileInput">
-              </div>
-              <button id="btnSaveToLocal" type="submit" class="btn btn-default">Save To LocalStorage</button>
-              <button id="btnSaveToURL" onclick="return saveToURL();" class="btn btn-default">Save To URL</button>
-            </form>
-            <!--textarea id="bccode" class="col-lg-12">
-            </textarea-->
-          </div>
+            </div>
         </div>
     </div>
     <div class="container bc_page" id="page_params">

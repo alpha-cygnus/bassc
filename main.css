@@ -335,23 +335,66 @@ div.UI {
 	display: none;
 }
 
-#srcList {
+html, body {
+	height:100%;
+}
+
+nav.navbar {
+	margin-bottom: 12px;
+}
+
+.left-side {
+	overflow: scroll;
+	height: 100%;
+	padding: 12px;
+	background: #EEEEEE;
+}
+
+.right-side {
+	overflow: scroll;
+	height: 100%;
+	padding: 12px;
+}
+
+.body {
+	height: 100%;
+}
+
+
+/*
+
+.body {
+    display: table;
+}
+
+.left-side {
+    float: none;
+    display: table-cell;
+}
+
+.right-side {
+    float: none;
+    display: table-cell;
+}
+*/
+
+ul.list {
 	list-style: none;
 	margin: 0px;
 	padding: 0px;
 }
 
-#srcList li {
+ul.list li {
 	cursor: pointer;
 	padding-left: 4px;
 	padding-right: 4px;
 }
 
-#srcList li:hover {
+ul.list li:hover {
 	background: #CCC;
 }
 
-#srcList li.current {
+ul.list li.current {
 	color: #FFF;
 	background: #000;
 }

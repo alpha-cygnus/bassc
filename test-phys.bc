@@ -18,12 +18,9 @@ SimpleSine {
 	-1200, 0, 10, -10, -20, 20 => [detune]o_0-5
 }
 
-Keyboard keys -> MidiHub allMidi
-UIKeyboard uiKeys -> allMidi -> uiKeys #, MidiLog midiLog
+MidiPoly<8> poly
 
-@UI uiKeys
-
-allMidi -> MidiPoly<8> poly[0-7] => SimpleSine ss_0-7 -> *0.1; # -> preDest
+#allMidi -> poly[0-7] => SimpleSine ss_0-7 -> *0.1; # -> preDest
 
 allMidi -> poly[0-7] => TestP p_0-7 -> *0.3 -> preDest
 
@@ -31,4 +28,3 @@ allMidi -> poly[0-7] => TestP p_0-7 -> *0.3 -> preDest
 
 poly[0-7] => MidiTrigger mt_0-7 => led_0-7
 
-@include test-vis.bc

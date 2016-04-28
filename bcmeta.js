@@ -284,16 +284,19 @@ class MetaModule extends Meta {
 			var nc = n.type;
 			var label = n.title;
 			if (!label) {
-				if (n.type == 'Const') {
+				if (n.type.name == 'Const') {
 					label = n.params.join(', ');
+				}
+				else if (n.type.name == 'Gain') {
+					label = '*' + n.params.join(', ');
 				} else {
 					var t = n.type.name;
-					label = t.typeLabel || t;
+					label = n.type.typeLabel || t;
 					if (n.params && n.params.length) {
 						label += '(' + n.params.join(', ') + ')';
 					}
 				}
-				if (n.name) label += ' ' + n.name;
+				if (n.name && !n.name.match(/^_/)) label += ' ' + n.name;
 				// if (n.inpType) label += ' <<' + n.inpType + '>>';
 				// if (n.outType) label += ' <<' + n.outType + '>>';
 			}
@@ -323,7 +326,7 @@ class MetaProc extends MetaModule {
 	constructor(proc) {
 		var name = `Proc_${++bcProcCount}`;
 		super(name);
-		this.typeLabel = proc.body;
+		this.typeLabel = '\\{' + (proc.body || '') + '\\}';
 		this.proc = proc;
 		var i = 0;
 		for (var p of proc.params) {
