@@ -298,6 +298,7 @@ div.UI {
 
 .UISpectrograph {
 	width: 256px;
+	margin: 0px 4px;
 	height: 128px;
 	border: 0px solid grey;
 }
