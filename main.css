@@ -332,8 +332,18 @@ div.UI {
     src: url("../font/tengtelc.ttf") format("TrueType");
 }
 
+#UI {
+	background: #EEE;
+	height: 100%;
+	padding: 8px;
+}
+
 .bc_page {
 	display: none;
+}
+
+.container.bc_page {
+	height: calc(100% - 72px);
 }
 
 html, body {
@@ -354,13 +364,33 @@ nav.navbar {
 .right-side {
 	overflow: scroll;
 	height: 100%;
-	padding: 12px;
+	padding: 0px 12px;
+	margin-bottom: 0px;
 }
 
 .body {
 	height: 100%;
 }
 
+div.CodeMirror {
+	margin-bottom: 10px;
+	height: calc(100% - 65px);
+}
+
+div.bottom-buttons {
+	margin-bottom: 0px;
+	background: #EEE;
+	padding: 10px;
+	text-align: right;
+}
+
+li#panicButton>a {
+	color: #F44;
+	background: #5e5e5e;
+}
+
+li#panicButton {
+}
 
 /*
 
