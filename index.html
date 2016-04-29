@@ -25,6 +25,7 @@
 
 <script src="lib/cm/mode/javascript.js"></script>
 <script src="lib/cm/mode/pegjs.js"></script>
+<script src="lib/cm/mode/bassc.js"></script>
 
 <script>
 "use strict";
@@ -87,7 +88,17 @@ if (_urlParams.bc) {
 var _currentSourceName;
 
 function setCurrentSource(name) {
-    if (window.cmBcCode) cmBcCode.setValue(BCPU.sources[name].data);
+    var srcTypeMode = {
+        bc: 'bassc',
+        pegjs: 'pegjs',
+    };
+    if (window.cmBcCode) {
+        cmBcCode.setValue(BCPU.sources[name].data);
+        var t = BCPU.getSourceType(name);
+        var mode = srcTypeMode[t];
+        console.log(name, mode);
+        cmBcCode.setOption('mode', mode || 'bassc');
+    }
     _currentSourceName = name;
     $('#srcList .current').removeClass('current');
     $(`#srcList li[data-name='${name}']`).addClass('current');
@@ -138,9 +149,10 @@ BCPU.onLoadAll(() => {
         
         //$('#btnSaveToURL').click();
         
-        setCurrentDiaClass('Main');
+        //setCurrentDiaClass('Main');
         //setCurrentSource(loadList.length > 0 ? loadList[loadList.length - 1] : 'overture.bc');
-        setCurrentSource('bc.pegjs');
+        setCurrentSource(loadList.length > 0 ? loadList[0] : 'overture.bc');
+        //setCurrentSource('bc.pegjs');
         setPage(location.hash.substr(1));
     })
 });
@@ -165,7 +177,7 @@ var bcPagesInfo = {
         init() {
             window.cmBcCode = CodeMirror.fromTextArea(document.getElementById("bccode"), {
                 lineNumbers: true,
-                mode: 'pegjs',
+                mode: 'bassc',
                 theme: 'bassc',
             });
             setCurrentSource(_currentSourceName);
@@ -178,7 +190,7 @@ var bcPagesInfo = {
     dia: {
         init() {
             //$('#ifrVis').attr('src', 'vis.html?Main');
-            setCurrentDiaClass(_currentDiaClass);
+            setCurrentDiaClass(_currentDiaClass || 'Main');
         }
     },
 

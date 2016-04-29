@@ -4,7 +4,7 @@
 
 	function noteToInt(n) {
 		var m;
-		var n2i = {C: 0, D:2, E:4, F: 5, G: 7, H: 9, A: 9, B: 11};
+		var n2i = {C: 0, D: 2, E: 4, F: 5, G: 7, H: 9, A: 9, B: 11};
 		var a2i = {'#': 1, 'b': -1, '-': 0};
 		if (m = n.match(/([A-H])([b#-])?([0-9])?/)) {
 			var i = n2i[m[1]];
@@ -483,7 +483,7 @@
 	
 	function getSourceType(name) {
 		var m;
-		if (m = name.match(/\.(\w{1,4})$/)) return m[1];
+		if (m = name.match(/\.(\w{1,6})$/)) return m[1];
 		return '';
 	}
 	
@@ -628,6 +628,7 @@
 		grammars,
 		parsers,
 		sources,
+		getSourceType,
 		requestSource,
 		addGrammar,
 		processSource,
