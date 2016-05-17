@@ -98,9 +98,9 @@ div#error {
 
 .seven-seg {
 	background: transparent;
-	width: 20px;
-	height: 40px;
-	border: 2px solid transparent;
+	width: 10px;
+	height: 20px;
+	border: 1px solid transparent;
 	position: relative;
 	display: inline-block;
 	margin: 0px;
@@ -109,7 +109,7 @@ div#error {
 .seven-seg span {
 	position: absolute;
 	border-color: #EE7;
-	border-width: 4px;
+	border-width: 2px;
 	border-style: solid;
 }
 .positive .seven-seg span {
@@ -119,53 +119,60 @@ div#error {
 	border-color: #11C;
 }
 .seven-seg span.m {
-	width: 14px;
+	width: 8px;
 	height: 0px;
-	left: 1px;
-	border-left: 4px solid transparent;
-	border-right: 4px solid transparent;
+	left: 0px;
+	border-left: 2px solid transparent;
+	border-right: 2px solid transparent;
 }
 .seven-seg .l, .seven-seg .r {
 	width: 0px;
-	height: 14px;
+	height: 7px;
 }
+
 .seven-seg .l {
 	left: 0px;
 }
 .seven-seg .r {
-	left: 12px;
+	left: 6px;
 }
 .seven-seg .t.m {
 	border-bottom: none;
-	top: 2px;
+	top: 1px;
 }
 .seven-seg span.t.l {
 	border-top-color: transparent;
-	border-bottom-width: 2px;
+	border-bottom-width: 1px;
 	border-bottom-color: transparent;
 	border-right: none;
-	top: 3px;
+	top: 2px;
 }
 .seven-seg span.t.r {
-	border-top: 4px solid transparent;
-	border-bottom: 2px solid transparent;
+	border-top: 2px solid transparent;
+	border-bottom: 1px solid transparent;
 	border-left: none;
-	top: 3px;
+	top: 2px;
 }
 .seven-seg .m.u {
-	border-bottom-width: 2px;
+	border-bottom-width: 1px;
 	border-top: none;
-	top: 16px;
+	top: 8px;
 }
 .seven-seg .m.d {
-	border-top-width: 2px;
+	border-top-width: 1px;
 	border-bottom: none;
-	top: 18px;
+	top: 9px;
 }
+.seven-seg .m.d, .seven-seg .m.u {
+	width: 6px;
+	left: 1px;
+}
+
 .seven-seg .b.l, .seven-seg .b.r {
-	border-top: 2px solid transparent;
-	border-bottom: 4px solid transparent;
-	top: 19px;
+	border-top: 1px solid transparent;
+	border-bottom: 2px solid transparent;
+	top: 9px;
+	height: 7px;
 }
 .seven-seg .b.l {
 	border-right: none;
@@ -175,7 +182,7 @@ div#error {
 }
 .seven-seg .b.m {
 	border-top: none;
-	top: 30px;
+	top: 15px;
 }
 
 .seven-seg.null .t, .seven-seg.null .b, .seven-seg.null .m {
@@ -221,7 +228,7 @@ div.UI {
 .UIDigits {
 	height: 20px;
 	background: #EEE;
-	transform: scale(0.5);
+	transform: scale(1);
 	transform-origin: left top;
 }
 
@@ -310,9 +317,11 @@ div.UI {
 	width: 512px;
 	margin-left: 4px;
 	margin-right: 4px;
-	height: 128px;
-	margin-top: 12px;
-	border: 0px solid grey;
+	height: 132px;
+	margin-top: 4px;
+	margin-bottom: 4px;
+	border-top: 2px solid black;
+	border-bottom: 2px solid black;
 	box-shadow: 0px 0px 3px 3px rgba(150, 150, 150, 1);
 }
 

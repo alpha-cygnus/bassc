@@ -181,7 +181,7 @@ class UIDigits extends UIBasis {
 		this.prevValue = v;
 	}
 	getHTML() {
-		var html = [`<div class="UI UIDigits" id="${this.getId()}">`];
+		var html = [`<div class="UI UIDigits" id="${this.getId()}" style="width:${this.numDigits*10}px;">`];
 		for (var i = 0; i < this.numDigits; i++) {
 			html.push(`<div class="seven-seg _${i}">
 				<span class="t m"></span>
