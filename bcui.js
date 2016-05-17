@@ -461,8 +461,8 @@ class UISpectrograph extends UIBasis {
 		this.ctx = this.elem.getContext('2d');
 		this.ctx.strokeStyle = 'black';
 		this.ctx.fillStyle = 'black';
-		this.ctx.fillRect(0, 0, this.width, this.height);
-		this.imageData = this.ctx.createImageData(this.width, 1);
+		this.ctx.clearRect(0, 0, this.width, this.height);
+		this.imageData = this.ctx.createImageData(this.width, this.height);
 		BC.ui.addDrawer(() => this.draw());
 		this.cx = 0;
 		this.dx = 1;
@@ -517,16 +517,21 @@ class UISpectrograph extends UIBasis {
 			v = Math.floor(v);
 			var r = v >= 128 ? (v - 128)*2 : 0;
 			var g = v < 128 ? v*2 : (255 - v)*2;
-			this.imageData.data[i*4] = r;
-			this.imageData.data[i*4 + 1] = g;
-			this.imageData.data[i*4 + 2] = 0;
-			this.imageData.data[i*4 + 3] = 255;
+			var pos = (this.height - this.cx - 1)*this.width*4 + i*4;
+			this.imageData.data[pos] = r;
+			this.imageData.data[pos + 1] = g;
+			this.imageData.data[pos + 2] = 0;
+			this.imageData.data[pos + 3] = Math.min(g + r, 255);
 		};
 		// var oid = this.ctx.getImageData(0, 0, this.width, this.height - 1);
 		// this.ctx.putImageData(oid, 0, 1);
 		// this.ctx.putImageData(this.imageData, 0, Math.floor(this.cx));
-		this.ctx.drawImage(this.elem, 0, 0, this.width, this.height - 1, 0, 1, this.width, this.height - 1);
-		this.ctx.putImageData(this.imageData, 0, 0);
+		// this.ctx.globalAlpha = 0.01;
+		// this.ctx.drawImage(this.elem, 0, 0, this.width, this.height - 1, 0, 1, this.width, this.height - 1);
+		// this.ctx.globalAlpha = 1;
+		this.ctx.putImageData(this.imageData, 0, - this.height + this.cx + 1, 0, this.height - this.cx - 1, this.width, this.cx);
+		this.ctx.putImageData(this.imageData, 0, this.cx, 0, 0, this.width, this.height - this.cx);
+		//this.ctx.putImageData(this.imageData, 0, this.cx);
 		this.cx += this.dx;
 		if (this.cx >= this.height) this.cx -= this.height;
 	}
@@ -562,7 +567,8 @@ class UISpectrum extends UIBasis {
 		var ctx = this.ctx;
 		this.lyser.getByteFrequencyData(d);
 		ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-		ctx.fillRect(0, 0, this.width, this.height);
+		//ctx.fillRect(0, 0, this.width, this.height);
+		ctx.clearRect(0, 0, this.width, this.height);
 		var dw = 8;
 		var w = this.width/dw;
 		var maxj = d.length;
@@ -609,7 +615,8 @@ class UISpectrum extends UIBasis {
 			// var g = 255 - v;
 			var r = v >= 128 ? (v - 128)*2 : 0;
 			var g = v < 128 ? v*2 : (255 - v)*2;
-			ctx.fillStyle = `rgb(${r}, ${g}, 0)`;
+			ctx.fillStyle = `rgba(${r}, ${g}, 0, ${Math.min(r + g, 255)/255})`;
+			//ctx.fillStyle = `rgba(${r}, ${g}, 0, 0.5)`;
 			ctx.fillRect(i*dw, this.height - v, (dw - 1) || 1, v);
 		};
 	}
@@ -637,8 +644,9 @@ class UISamplograph extends UIBasis {
 		this.ctx = this.elem.getContext('2d');
 		this.ctx.strokeStyle = 'black';
 		this.ctx.fillStyle = 'black';
-		this.ctx.fillRect(0, 0, this.width, this.height);
-		this.imageData = this.ctx.createImageData(this.width, 1);
+		//this.ctx.fillRect(0, 0, this.width, this.height);
+		this.ctx.clearRect(0, 0, this.width, this.height);
+		this.imageData = this.ctx.createImageData(this.width, this.height);
 		BC.ui.addDrawer(() => this.draw());
 		this.cx = 0;
 		this.dx = 1;
@@ -659,13 +667,18 @@ class UISamplograph extends UIBasis {
 			var r = (v < 128 ? 128 - v : 0)*8;
 			var g = (v >= 128 ? v - 128 : 0)*8;
 			//if (i == 0) console.log(v, r, g);
-			this.imageData.data[i*4] = r;
-			this.imageData.data[i*4 + 1] = g;
-			this.imageData.data[i*4 + 2] = 0;
-			this.imageData.data[i*4 + 3] = 255;
+			var pos = (this.height - this.cx - 1)*this.width*4 + i*4;
+			this.imageData.data[pos] = r;
+			this.imageData.data[pos + 1] = g;
+			this.imageData.data[pos + 2] = 0;
+			this.imageData.data[pos + 3] = Math.min(r + g, 255);
 		};
-		this.ctx.drawImage(this.elem, 0, 0, this.width, this.height - 1, 0, 1, this.width, this.height - 1);
-		this.ctx.putImageData(this.imageData, 0, 0);
+		// this.ctx.drawImage(this.elem, 0, 0, this.width, this.height - 1, 0, 1, this.width, this.height - 1);
+		// this.ctx.putImageData(this.imageData, 0, 0);
+
+		this.ctx.putImageData(this.imageData, 0, - this.height + this.cx + 1, 0, this.height - this.cx - 1, this.width, this.cx);
+		this.ctx.putImageData(this.imageData, 0, this.cx, 0, 0, this.width, this.height - this.cx);
+
 		// var oid = this.ctx.getImageData(0, 0, this.width, this.height - 1);
 		// this.ctx.putImageData(oid, 0, 1);
 		// this.ctx.putImageData(this.imageData, 0, 0); //Math.floor(this.cx));
@@ -698,7 +711,7 @@ class UIScope extends UIBasis {
 		
 		this.ctx.strokeStyle = '#4F4';
 		this.ctx.fillStyle = '#000';
-		this.ctx.lineWidth = 2;
+		this.ctx.lineWidth = 4;
 		this.ctx.fillRect(0, 0, this.width, this.height);
 		BC.ui.addDrawer(() => this.draw());
 	}
@@ -716,7 +729,8 @@ class UIScope extends UIBasis {
 		}
 		//this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
 		this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-		this.ctx.fillRect(0, 0, this.width, this.height);
+		//this.ctx.fillRect(0, 0, this.width, this.height);
+		this.ctx.clearRect(0, 0, this.width, this.height);
 		this.ctx.beginPath();
 		for (var ix = 0; ix < this.width; ix++) {
 			var j = ix;
