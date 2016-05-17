@@ -1,0 +1,7 @@
+SimpleSine {
+	MIDIIN inp -> MidiNote -> Note2Detune ->[detune]Osc<SINE> o_0-5
+	inp -> MidiTrigger -> [trigger]ADSR<0.01, 0.1, 0.9, 1> adsr
+	o_0-5 => *0, *1, *1, *1, *1.0, *1.0 -> adsr -> AOUT out
+	-1200, 0, 10, -10, -20, 20 => [detune]o_0-5
+}
+

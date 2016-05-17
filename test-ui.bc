@@ -1,0 +1,15 @@
+#@UI "Label" | UILabel<3>
+@UI { UILED led2_0-7 } | { UIDial dial_0-7 } | { UILED led_0-7 } | { UIDigits<3> digs_0-7 }
+@UI UIKeyboard uiKeyboard
+
+uiKeyboard, Keyboard -> allMidi -> uiKeyboard
+
+dial_0-7 => {x| x > 0 ? x : 0 } _0-7 => led_0-7
+dial_0-7 => {x| x < 0 ? -x: 0 } _0-7 => led2_0-7
+dial_0-7 => {x|x*999} _0-7 => digs_0-7
+
+@include ins-simple.bc
+
+allMidi -> SimpleSine -> *0.3 -> preDest
+
+@include ui-scopes.bc

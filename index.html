@@ -185,6 +185,7 @@ var bcPagesInfo = {
     },
     ui: {
         init() {
+            initBG();
         }
     },
     dia: {
@@ -217,6 +218,35 @@ function setPage(page) {
         pinfo.init();
         pinfo.inited = true;
     }
+}
+
+function initBG() {
+    var cnv = $('#bg-paint')[0];
+    var ctx = cnv.getContext('2d');
+    ctx.strokeStyle = 'red';
+    ctx.fillStyle = '#f8f8f8';
+    var [w, h] = [80, 80];
+    ctx.fillRect(0, 0, w, h);
+    var grid = [
+        [10, '#eee'],
+        [20, '#ddd'],
+        [40, '#ccc'],
+        [80, '#bbb'],
+    ];
+    for (var [step, stroke] of grid) {
+        ctx.beginPath();
+        for (var ix = 0; ix < w; ix += step) {
+            console.log(step, stroke, ix);
+            ctx.moveTo(0, ix);
+            ctx.lineTo(w, ix);
+            ctx.moveTo(ix, 0);
+            ctx.lineTo(ix, h);
+        }
+        ctx.strokeStyle = stroke;
+        ctx.strokeWidth = 1;
+        ctx.stroke();
+    }
+    $('#UI').css('background-image', `url(${cnv.toDataURL()})`);
 }
 </script>
 
@@ -270,6 +300,8 @@ function setPage(page) {
 
     <div class="container bc_page" id="page_ui">
         <div id="UI"></div>
+<canvas style="width:40px;height:40px;display:none" width="80" height="80" id="bg-paint">
+</canvas>
     </div>
     <div class="container bc_page" id="page_dia">
         <div class="row body">
@@ -313,6 +345,7 @@ function setPage(page) {
     <div class="container bc_page" id="page_params">
         PARAMS
     </div>
+
 
 </body>
 </html>

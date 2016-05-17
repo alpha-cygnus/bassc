@@ -66,19 +66,25 @@ class UIManager {
 		this.drawers = [];
 	}
 	start() {
-		$('.UIDial').on('mousedown', e => {
-			var elem = e.target;
-			mouseCapturer = {
-				elem,
-				x0: e.screenX, y0: e.screenY,
-				v0: getDialValue(elem),
-				move(e) {
-					var dy = this.y0 - e.screenY;
-					var dv = dy/100;
-					setDialValue(this.elem, this.v0 + dv);
+		$('.UIDial')
+			.on('mousedown', e => {
+				var elem = e.target;
+				var vStep = e.shiftKey ? 1000 : 100;
+				mouseCapturer = {
+					elem,
+					x0: e.screenX, y0: e.screenY,
+					v0: getDialValue(elem),
+					move(e) {
+						var dy = this.y0 - e.screenY;
+						var dv = dy/vStep;
+						setDialValue(this.elem, this.v0 + dv);
+					}
 				}
-			}
-		});
+			})
+			.on('dblclick', e => {
+				setDialValue(e.target, 0);
+			})
+		;
 		$(document).on('mousemove', e => {
 			if (mouseCapturer) {
 				mouseCapturer.move(e);
@@ -446,8 +452,8 @@ class UISpectrograph extends UIBasis {
 		this.mode = 'exp';
 	}
 	getHTML() {
-		return `<canvas class="UI UISpectrograph UICanvas" id="${this.getId()}"
-			style="width:512px; height:128px;"
+		//style="width:512px; height:128px;"
+		return `<canvas class="UI UISpectrograph UICanvas UIScope" id="${this.getId()}"
 			width="${this.width}" height="${this.height}"></canvas>`;
 	}
 	onStartUI() {
@@ -539,8 +545,7 @@ class UISpectrum extends UIBasis {
 		this.mode = 'exp';
 	}
 	getHTML() {
-		return `<canvas class="UI UISpectrograph UICanvas" id="${this.getId()}"
-			style="width:512px; height:128px"
+		return `<canvas class="UI UISpectrograph UICanvas UIScope" id="${this.getId()}"
 			width="${this.width}" height="${this.height}"></canvas>`;
 	}
 	onStartUI() {
@@ -622,8 +627,7 @@ class UISamplograph extends UIBasis {
 		this.height = 256;
 	}
 	getHTML() {
-		return `<canvas class="UI UISpectrograph UICanvas" id="${this.getId()}"
-			style="width:512px; height:128px"
+		return `<canvas class="UI UISpectrograph UICanvas UIScope" id="${this.getId()}"
 			width="${this.width}" height="${this.height}"></canvas>`;
 	}
 	onStartUI() {
@@ -685,8 +689,7 @@ class UIScope extends UIBasis {
 		this.height = 256;
 	}
 	getHTML() {
-		return `<canvas class="UI UISpectrograph UICanvas" id="${this.getId()}"
-			style="width: 512px; height:128px;"
+		return `<canvas class="UI UISpectrograph UICanvas UIScope" id="${this.getId()}"
 			width="${this.width}" height="${this.height}"></canvas>`;
 	}
 	onStartUI() {

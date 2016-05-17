@@ -2,7 +2,7 @@ TestP {
 	MIDIIN -> MidiNote note, MidiTrigger trigger
 	trigger -> [trigger]ADSR<0.001, 0.001, 0, 0.01> adsrClk, [trigger]ADSR<0.3, 0.3, 0.5, 0.3> adsr 
 	Noise -> adsrClk -> *raw -> Delay dly -> Filter<LP> flt -> *0.88 -> raw
-	note -> {n|pow(2, (n - 69)/12)*440} f -> PINLog logF -> {f|1/f} -> PINLog logN -> P2A -> [time]dly
+	note -> {n|pow(2, (n - 69)/12)*440} f -> {f|1/f} -> P2A -> [time]dly
 	#0.0001 -> [time]dly
 	f -> P2A af -> (*4 -> [freq]flt)
 	af -> [freq]Osc<SINE> o
