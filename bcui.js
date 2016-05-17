@@ -550,15 +550,33 @@ class UISpectrum extends UIBasis {
 		this.mode = 'exp';
 	}
 	getHTML() {
-		return `<canvas class="UI UISpectrograph UICanvas UIScope" id="${this.getId()}"
-			width="${this.width}" height="${this.height}"></canvas>`;
+		return `<div class="UI UIScope UISpectrograph" id="${this.getId()}">
+			<canvas class="UICanvas scope-bg" width="${this.width}" height="${this.height}"></canvas>
+			<canvas class="UICanvas scope-data" width="${this.width}" height="${this.height}"></canvas>
+			</div>`;
 	}
 	onStartUI() {
-		this.elem = document.getElementById(this.getId());
-		this.ctx = this.elem.getContext('2d');
-		this.ctx.strokeStyle = 'black';
-		this.ctx.fillStyle = 'black';
-		this.ctx.fillRect(0, 0, this.width, this.height);
+		this.elem = $('#' + this.getId())[0];
+		this.dataCanvas = $('canvas.scope-data', this.elem)[0];
+		this.bgCanvas = $('canvas.scope-bg', this.elem)[0];
+		this.ctx = this.dataCanvas.getContext('2d');
+		this.bgCtx = this.bgCanvas.getContext('2d');
+		this.bgCtx.fillStyle = 'black';
+		this.bgCtx.fillRect(0, 0, this.width, this.height);
+		
+		this.bgCtx.beginPath();
+		for (var i = 0; i < 100; i++) {
+			this.bgCtx.moveTo(i * 40, 0);
+			this.bgCtx.lineTo(i * 40, this.height);
+		}
+		for (var i = 0; i < 50; i++) {
+			this.bgCtx.moveTo(0, i * 20, 0);
+			this.bgCtx.lineTo(this.width, i * 20);
+		}
+		this.bgCtx.lineWidth = 0.4;
+		this.bgCtx.strokeStyle = 'white';
+		this.bgCtx.stroke();
+		
 		this.imageData = this.ctx.createImageData(1, this.height);
 		BC.ui.addDrawer(() => this.draw());
 	}
