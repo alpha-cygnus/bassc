@@ -339,6 +339,9 @@ canvas.scope-data {
 	width: 512px;
 	height: 128px;
 }
+.UISpectrograph canvas.scope-data {
+	top: 0px;
+}
 
 
 .layoutV {

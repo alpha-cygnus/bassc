@@ -290,7 +290,8 @@ class Core {
 			}
 			core.onProduce(fun);
 			return () => core.offProduce(fun);
-		})
+		});
+		this.context = Tone.context;
 	}
 	onProduce(fun) {
 		let id = _getObjId(fun);

@@ -452,11 +452,12 @@ class UIAbstractScope extends UIBasis {
 		this.dataArray = new Uint8Array(this.lyser.frequencyBinCount);
 		this.width = this.dataArray.length;
 		this.height = 256;
+		this.bgHeight = 264;
 		this.mode = 'exp';
 	}
 	getHTML() {
-		return `<div class="UI UIScope UISpectrograph" id="${this.getId()}">
-			<canvas class="UICanvas scope-bg" width="${this.width}" height="${this.height}"></canvas>
+		return `<div class="UI UIScope ${this.constructor.name}" id="${this.getId()}">
+			<canvas class="UICanvas scope-bg" width="${this.width}" height="${this.bgHeight}"></canvas>
 			<canvas class="UICanvas scope-data" width="${this.width}" height="${this.height}"></canvas>
 			</div>`;
 	}
@@ -476,12 +477,12 @@ class UIAbstractScope extends UIBasis {
 	}
 	drawBG(ctx) {
 		ctx.fillStyle = 'black';
-		ctx.fillRect(0, 0, this.width, this.height);
+		ctx.fillRect(0, 0, this.width, this.bgHeight);
 		
 		ctx.beginPath();
 		for (var i = 0; i < 100; i++) {
 			ctx.moveTo(i * 40, 0);
-			ctx.lineTo(i * 40, this.height);
+			ctx.lineTo(i * 40, this.bgHeight);
 		}
 		for (var i = 0; i < 50; i++) {
 			ctx.moveTo(0, i * 20, 0);
@@ -505,32 +506,56 @@ class UISpectrograph extends UIAbstractScope {
 		this.dataArray = new Uint8Array(this.lyser.frequencyBinCount);
 		this.width = this.dataArray.length;
 		this.height = 256;
+		this.bgHeight = 264;
 		this.mode = 'exp';
 		this.dw = 1;
+		this.minNote = 20;
+		this.maxNote = 125;
 	}
 	drawBG(ctx) {
 		ctx.fillStyle = 'black';
-		ctx.fillRect(0, 0, this.width, this.height);
+		ctx.fillRect(0, 0, this.width, this.bgHeight);
 
 		ctx.beginPath();
-		for (var i = 0; i < 100; i++) {
-			ctx.moveTo(i * 40, 0);
-			ctx.lineTo(i * 40, this.height);
+		// for (var i = 0; i < 100; i++) {
+		// 	ctx.moveTo(i * 40, 0);
+		// 	ctx.lineTo(i * 40, this.height);
+		// }
+		for (var i = 10; i < 100000; i *= 10) {
+			for (var f2 of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+				var x = Math.round(this.getXForFreq(i*f2)*4)/4;
+				ctx.moveTo(x, 0);
+				ctx.lineTo(x, this.bgHeight);
+			}
 		}
-		ctx.lineWidth = 0.4;
+		ctx.lineWidth = 0.5;
 		ctx.strokeStyle = 'white';
+		ctx.stroke();
+
+		ctx.beginPath();
+		var x = Math.round(this.getXForFreq(444)*2)/2;
+		ctx.moveTo(x, 0);
+		ctx.lineTo(x, this.height);
+		ctx.lineWidth = 1;
+		ctx.strokeStyle = 'red';
 		ctx.stroke();
 		
 		this.cx = 0;
+	}
+	getXForFreq(f) {
+		var minn = this.minNote;
+		var cntn = this.maxNote - this.minNote;
+		var n = Math.log2(f/440)*12 + 69;
+		return (n - minn)/cntn*this.width;
 	}
 	getColor(i) {
 		var dw = this.dw;
 		var d = this.dataArray;
 		var w = this.width/dw;
 		var maxj = d.length;
-		var maxf = 44100;
-		var minn = 20;
-		var cntn = 125;
+		var maxf = BC.core.context.sampleRate;
+		var minn = this.minNote;
+		var cntn = this.maxNote - this.minNote;
 		var df = maxf / maxj;
 		function getJi(i) {
 			var n = i/w*cntn + minn;
@@ -599,26 +624,41 @@ class UISpectrum extends UISpectrograph {
 		this.lyser.fftSize = 2048;
 		this.inp.bind(this.lyser);
 		this.dataArray = new Uint8Array(this.lyser.frequencyBinCount);
-		this.width = 512; //this.dataArray.length;
+		this.width = 1024; //this.dataArray.length;
 		this.height = 256;
+		this.bgHeight = 264;
 		this.mode = 'exp';
-		this.dw = 8;
+		this.dw = 16;
+		this.minNote = 20;
+		this.maxNote = 125;
 	}
 	drawBG(ctx) {
 		ctx.fillStyle = 'black';
-		ctx.fillRect(0, 0, this.width, this.height);
+		ctx.fillRect(0, 0, this.width, this.bgHeight);
 		
 		ctx.beginPath();
-		for (var i = 0; i < 100; i++) {
-			ctx.moveTo(i * 40, 0);
-			ctx.lineTo(i * 40, this.height);
+		for (var i = 1; i < 100000; i *= 10) {
+			for (var f2 of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+				var x = Math.round(this.getXForFreq(i*f2)*4)/4;
+				ctx.moveTo(x, 0);
+				ctx.lineTo(x, this.bgHeight);
+			}
 		}
-		for (var i = 0; i < 50; i++) {
-			ctx.moveTo(0, i * 20, 0);
-			ctx.lineTo(this.width, i * 20);
+		for (var iy = 0; iy <= 256; iy += 32) {
+			var y = this.bgHeight - iy - 1;
+			ctx.moveTo(0, y, 0);
+			ctx.lineTo(this.width, y);
 		}
-		ctx.lineWidth = 0.4;
+		ctx.lineWidth = 0.5;
 		ctx.strokeStyle = 'white';
+		ctx.stroke();
+		
+		ctx.beginPath();
+		var x = Math.round(this.getXForFreq(444)*2)/2;
+		ctx.moveTo(x, 0);
+		ctx.lineTo(x, this.bgHeight);
+		ctx.lineWidth = 1;
+		ctx.strokeStyle = 'red';
 		ctx.stroke();
 	}
 	drawData(ctx) {
@@ -628,7 +668,7 @@ class UISpectrum extends UISpectrograph {
 		var w = this.width/dw;
 		for (var i = 0; i < w; i++) {
 			var {r, g, b, a, v} = this.getColor(i);
-			ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a/255})`;
+			ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${255/255})`;
 			ctx.fillRect(i*dw, this.height - v, (dw - 1) || 1, v);
 		};
 	}
@@ -644,6 +684,7 @@ class UISamplograph extends UIBasis {
 		this.dataArray = new Uint8Array(this.lyser.fftSize);
 		this.width = this.dataArray.length/4;
 		this.height = 256;
+		this.bgHeight = 264;
 	}
 	getHTML() {
 		return `<canvas class="UI UISpectrograph UICanvas UIScope" id="${this.getId()}"
@@ -676,26 +717,41 @@ class UISamplograph extends UIBasis {
 		}
 		for (var i = 0; i < this.width; i++) {
 			var v = d[i + j0];
-			var r = (v < 128 ? 128 - v : 0)*8;
-			var g = (v >= 128 ? v - 128 : 0)*8;
+			var iv = v;
+			var r, g, b, a;
+			if (v < 128) {
+				v = (128 - v)/128;
+				g = Math.min(255, v*2*255);
+				r = Math.max((v - 0.5)*2*255, 0);
+				b = 0;
+				a = Math.min(v, 0.5)*2*255;
+			} else {
+				v = (v - 128)/127;
+				r = Math.min(255, v*2*255);
+				g = Math.max((v - 0.5)*2*255, 0);
+				b = 0;
+				a = Math.min(v, 0.5)*2*255;
+			}
+			if (iv == 255) {
+				b = 200;
+			}
+			if (iv == 0) {
+				b = 200;
+			}
+			// var r = (v < 128 ? 128 - v : 0)*8;
+			// var g = (v >= 128 ? v - 128 : 0)*8;
 			//if (i == 0) console.log(v, r, g);
 			var pos = (this.height - this.cx - 1)*this.width*4 + i*4;
 			this.imageData.data[pos] = r;
 			this.imageData.data[pos + 1] = g;
-			this.imageData.data[pos + 2] = 0;
-			this.imageData.data[pos + 3] = Math.min(r + g, 255);
+			this.imageData.data[pos + 2] = b;
+			this.imageData.data[pos + 3] = a;
 		};
 		// this.ctx.drawImage(this.elem, 0, 0, this.width, this.height - 1, 0, 1, this.width, this.height - 1);
 		// this.ctx.putImageData(this.imageData, 0, 0);
 
 		this.ctx.putImageData(this.imageData, 0, - this.height + this.cx + 1, 0, this.height - this.cx - 1, this.width, this.cx);
 		this.ctx.putImageData(this.imageData, 0, this.cx, 0, 0, this.width, this.height - this.cx);
-
-		// var oid = this.ctx.getImageData(0, 0, this.width, this.height - 1);
-		// this.ctx.putImageData(oid, 0, 1);
-		// this.ctx.putImageData(this.imageData, 0, 0); //Math.floor(this.cx));
-		// this.backCtx.putImageData(this.imageData, 0, this.cx);
-		// this.ctx.drawImage(this.backBuf, 0, 1, );
 
 		this.cx += this.dx;
 		if (this.cx >= this.height) this.cx -= this.height;
@@ -712,6 +768,7 @@ class UIScope extends UIBasis {
 		this.dataArray = new Uint8Array(this.lyser.fftSize);
 		this.width = this.dataArray.length/4;
 		this.height = 256;
+		this.bgHeight = 264;
 	}
 	getHTML() {
 		return `<canvas class="UI UISpectrograph UICanvas UIScope" id="${this.getId()}"
