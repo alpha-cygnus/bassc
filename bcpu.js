@@ -110,21 +110,29 @@
 		}
 	}
 	class LayoutSub extends SyntaxElem {
-		constructor(items) {
+		constructor(items, ss) {
 			super();
 			this.items = items;
+			this.styles = ss;
 		}
 		toMeta(_cc, accum) {
-			return [this.items.map(i => i.toMeta(_cc)).reduce((a, b) => a.concat(b), [])];
+			var res = [this.items.map(i => i.toMeta(_cc)).reduce((a, b) => a.concat(b), [])];
+			_cc.uiStyles[BC._getObjId(res)] = this.styles;
+			return res;
 		}
 	}
 	class LayoutDecl extends SyntaxElem {
-		constructor(decl) {
+		constructor(decl, ss) {
 			super();
 			this.decl = decl;
+			this.styles = ss;
 		}
 		toMeta(_cc) {
-			return this.decl.toMeta(_cc, {}).ids;
+			var ids = this.decl.toMeta(_cc, {}).ids;
+			for (var id of ids) {
+				_cc.uiStyles[id] = this.styles;
+			}
+			return ids;
 		}
 	}
 	class Include extends SyntaxElem {

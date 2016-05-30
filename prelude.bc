@@ -171,6 +171,18 @@ WebMidi {
 	MIDIOUT out
 }
 
+UILabel {
+	
+}
+
+UIHLine {
+	
+}
+
+UIHSpacing {
+	
+}
+
 UIDial {
 	POUT out
 }

@@ -338,7 +338,7 @@ class UIKeyboard extends UIBasis {
 		this.inp = new BC.MIDIIN(this, []);
 		this.range = [24, 113];
 	}
-	getHTML() {
+	getHTML(css) {
 		function isWhite(n) {
 			return {
 				 0: ['C', 'bl'],
@@ -351,7 +351,7 @@ class UIKeyboard extends UIBasis {
 			}[n%12];
 		}
 		var html = `
-		<div class="UIKeyboard" id="${this.getId()}">
+		<div class="UIKeyboard ${css}" id="${this.getId()}" data-title="${this.title || this.name || this.id}">
 			<div class="kbd-top"></div>
 			<div class="kbd" style="display:block">
 				<div class="kbd-up">`
@@ -811,10 +811,43 @@ class UIScope extends UIBasis {
 	}
 }
 
+
+class UILabel extends UIBasis {
+	constructor() {
+		super(...arguments);
+	}
+	getHTML() {
+		var slabel = this.title || this.name || this.id;
+		//style="width: ${slabel.length*10}px;"
+		return [`<div class="UI ${this.constructor.name}" id="${this.getId()}">`]
+			.concat(slabel.split('').map(c => `<span>${c}</span>`))
+			.concat(['</div>'])
+			.join('');
+	}
+}
+
+class UIHSpacing extends UIBasis {
+	constructor(parent, [len]) {
+		super(...arguments);
+		this.len = len;
+	}
+	getHTML() {
+		return `<div class="UI ${this.constructor.name}" id="${this.getId()}" style="width: ${this.len*10}px;"></div>`;
+	}
+}
+
+class UIHLine extends UIHSpacing {
+}
+
+
+
 BC.ui = new UIManager();
 
 Object.assign(BC, {
 	UIBasis,
+	UILabel,
+	UIHSpacing,
+	UIHLine,
 	UIDial,
 	UIDigits,
 	UIValue,

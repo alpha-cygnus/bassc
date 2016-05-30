@@ -43,7 +43,7 @@ class Meta {
 		this.compileCons(res);
 		res.push('\t}');
 
-		res.push('\tgetHTML() {');
+		res.push('\tgetHTML(styles) {');
 		this.compileGetHTML(res);
 		res.push('\t}');
 
@@ -91,6 +91,7 @@ class MetaModule extends Meta {
 		this.outByType = {P: [], A: [], MIDI: []};
 		this.layouts = [];
 		this.melodies = [];
+		this.uiStyles = {};
 	}
 	compileCons(res) {
 		if (this.initList.length > 0) {
@@ -111,7 +112,7 @@ class MetaModule extends Meta {
 					res.push(`\t\tthis.${nn}.name = '${node.name}';`);
 				}
 				if (node.title) {
-					res.push(`\t\tthis.${nn}.title = ${node.title};`);
+					res.push(`\t\tthis.${nn}.title = "${node.title}";`);
 				}
 			}
 		}
@@ -122,14 +123,18 @@ class MetaModule extends Meta {
 	}
 	compileGetHTML(res) {
 		res.push(`\t\tvar html = [];`);
+		res.push('html.push(`<div class="UI ${this.id} ${this.constructor.name} ${styles}" id="${this.getUIId()}" data-title="${this.title || this.name || this.id}">`);');
 		res.push(`\t\tvar s;`);
+		var self = this;
 		function compileLayout(ly, isVert) {
-			res.push(`\t\thtml.push('<div class="layout${isVert ? 'V' : 'H'}">');`)
+			var lyId = BC._getObjId(ly);
+			var ss = (self.uiStyles[lyId] || []).join(' ');
+			res.push(`\t\thtml.push('<div class="layout${isVert ? 'V' : 'H'} ${ss}">');`)
 			for (var ln of ly) {
 				if ($.isArray(ln)) {
 					compileLayout(ln, !isVert);
 				} else {
-					res.push(`\t\tif (s = this.${ln}.getHTML(this)) html.push(s);`);
+					res.push(`\t\tif (s = this.${ln}.getHTML('${(self.uiStyles[ln] || []).join(' ')}')) html.push(s);`);
 				}
 			}
 			res.push(`\t\thtml.push('</div>');`)
@@ -139,6 +144,7 @@ class MetaModule extends Meta {
 			compileLayout(ly);
 			res.push(`\t\thtml.push('</div>');`)
 		}
+		res.push(`\t\thtml.push('</div>');`)
 		res.push(`\t\treturn html.join('');`);
 	}
 	compileOnStartUI(res) {

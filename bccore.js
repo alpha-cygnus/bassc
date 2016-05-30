@@ -654,6 +654,9 @@ class QDemux extends BaseNode {
 
 // abstract base for modules
 class Module extends BaseNode {
+	getUIId() {
+		return `ui_${BC._getObjId(this)}`;
+	}
 	constructor(parent) {
 		super(...arguments);
 	}

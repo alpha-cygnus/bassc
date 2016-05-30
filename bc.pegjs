@@ -34,8 +34,14 @@ init_item = ids:idr cons:(EQ cons:Cons { return cons; })? { return ModuleInitIte
 layout = UI ls:l_decls { return Layout(ls); }
 l_decls = head:l_decl tail:(PIPE d:l_decl { return d })* { return [head].concat(tail); }
 l_decl
-	= COPEN decls:l_decls CCLOSE { return LayoutSub(decls); }
-	/ decl:declRef { return LayoutDecl(decl); }
+	= COPEN decls:l_decls CCLOSE ss:l_style* { return LayoutSub(decls, ss); }
+	/ decl:l_dr ss:l_style* { return LayoutDecl(decl, ss); }
+l_dr
+	= s:STR2 { return Decl(ConsRef('UILabel', []), null, s); }
+	/ n:$(DIGIT+) { return Decl(ConsRef('UIHSpacing', [ParamNum(n)])); }
+	/ '-' n:$(DIGIT+) { return Decl(ConsRef('UIHLine', [ParamNum(n)])); }
+	/ decl:declRef { return decl; }
+l_style = '.' cn:$(([a-z]/[A-Z]/[0-9]/'-')+) ws0 { return cn; }
 
 include = INC name:$((FILESYM+ '/')* FILESYM+ '.' ('bc' / 'mid' / 'midi' / 'track')) {
 	return Include(name);
@@ -142,7 +148,7 @@ pval
 	/ id:Id { return ParamEnum(id); }
 
 num = HEX / BIN / QNUM / OCT / NUM
-str = STR
+//str = STR
 note = n:NOTE { return noteToInt(n) }
 tseq = TSEQ
 title = STR2
@@ -187,9 +193,9 @@ ACLOSE = ws '>' ws0
 PIPE = ws '|' ws0
 EQ = ws '=' ws0
 STR "string" 
-	= ws "'" s:$([^']*) "'" ws0 { return "'" + s + "'"; }
+	= ws "'" s:$([^']*) "'" ws0 { return s; }
 STR2 "string2" 
-	= ws '"' s:$([^"]*) '"' ws0 { return '"' + s + '"'; }
+	= ws '"' s:$([^"]*) '"' ws0 { return s; }
 NOTE = ws n:$([A-H] [#-b]? DIGIT?) ws0 { return n }
 TSEQ = ws s:$([x.]+) ws0 { return s.split('').map(c => c == 'x' ? 1 : 0) }
 ENUM = ws '@enum' !IDSYM ws0

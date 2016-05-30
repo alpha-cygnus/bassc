@@ -1,6 +1,17 @@
 #@UI "Label" | UILabel<3>
 @UI { UILED led2_0-7 } | { UIDial dial_0-7 } | { UILED led_0-7 } | { UIDigits<3> digs_0-7 }
-@UI UIKeyboard uiKeyboard
+@UI {"Key board" | UIKeyboard uiKeyboard }.framed
+
+SomeDial {
+	@UI UILED ledNeg | UIDial dial | UILED ledPos | UIDigits<3> digs
+	dial -> {x| x > 0 ? x : 0 } -> ledPos
+	dial -> {x| x < 0 ? -x: 0 } -> ledNeg
+	dial -> {x|x*999} => digs
+	dial -> POUT out
+}
+
+@UI {{"Quantity" | -5 | SomeDial d1} | SomeDial d2 "Q2" .with-title}
+
 
 uiKeyboard, Keyboard -> allMidi -> uiKeyboard
 
