@@ -218,6 +218,25 @@ div#error {
 .seven-seg.minus .t, .seven-seg.minus .b {
 	display: none;
 }
+/* hex */
+.seven-seg.d-a .b.m {
+	display: none;
+}
+.seven-seg.d-b .t.r, .seven-seg.d-b .t.m {
+	display: none;
+}
+.seven-seg.d-c .t.r, .seven-seg.d-c .m.u, .seven-seg.d-c .m.d, .seven-seg.d-c .b.r {
+	display: none;
+}
+.seven-seg.d-d .t.l, .seven-seg.d-d .t.m {
+	display: none;
+}
+.seven-seg.d-e .t.r, .seven-seg.d-e .b.r {
+	display: none;
+}
+.seven-seg.d-f .t.r, .seven-seg.d-f .b.r, .seven-seg.d-f .b.m {
+	display: none;
+}
 
 
 div.UI {
@@ -225,7 +244,7 @@ div.UI {
 	margin: 0px;
 }
 
-.UIDigits {
+.UIDigits, .UIHexDigits {
 	height: 20px;
 	background: #EEE;
 	transform: scale(1);
@@ -314,7 +333,7 @@ div.UI {
 }
 
 .UILabel {
-	font-family: monospace;
+	font-family: "Courier new", monospace;
 	font-size: 17px;
 	height: 20px;
 	position: relative;
@@ -322,11 +341,30 @@ div.UI {
 .UILabel span {
 	display: inline-block;
 	width: 10px;
-	top: -3px;
+	top: -1px;
 	position: relative;
 	-webkit-user-select: none;
 	-moz-user-select: none;
 	user-select: none;
+	text-align: center;
+}
+.UILabel span.half {
+	width: 5px;
+	left: -2px;
+}
+
+.UILabel.page-title {
+	font-family: "Courier new", monospace;
+	font-size: 34px;
+	height: 40px;
+	position: relative;
+}
+.UILabel.page-title span {
+	width: 20px;
+}
+.UILabel.page-title span.half {
+	width: 10px;
+	left: -4px;
 }
 
 .UIHSpacing {
@@ -447,7 +485,7 @@ canvas.scope-data {
 	display: none;
 }
 
-.container.bc_page {
+.container.auto_height {
 	height: calc(100% - 72px);
 }
 
@@ -533,4 +571,92 @@ ul.list li:hover {
 ul.list li.current {
 	color: #FFF;
 	background: #000;
+}
+
+
+.UIVSlider input[type='range'] {
+	transform: rotate(-90deg);
+}
+.UIVSlider {
+	width: 20px;
+	height: 80px;
+}
+.UIVSlider input[type='range'] {
+	-webkit-appearance: none;
+	transform: rotate(90deg);
+	transform-origin: left top;
+	position: relative;
+	left: 20px;
+	width: 80px;
+	height: 20px;
+}
+.UIVSlider input[type='range']::-webkit-slider-runnable-track {
+  width: 80px;
+  height: 20px;
+  border-radius: 2px;
+  box-shadow: inset 0px 0px 1px 1px #858585;
+  border-color: rgba(94, 80, 95, 0.5);
+}
+.UIVSlider1 input[type='range']::-moz-range-track {
+  width: 6.25em;
+  height: 0.5em;
+  border-radius: 0.5em;
+  box-shadow: inset -0.125em 0 0.125em #858585;
+  border-color: rgba(94, 80, 95, 0.5);
+}
+.UIVSlider1 input[type='range']::-ms-track {
+  width: 6.25em;
+  height: 0.5em;
+  border-radius: 0.5em;
+  box-shadow: inset -0.125em 0 0.125em #858585;
+  border-color: rgba(94, 80, 95, 0.5);
+}
+input[type=range]:focus {
+  outline: none;
+}
+.UIVSlider input[type='range']::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	border-color: #454547;
+	width: 20px;
+	height: 20px;
+	border-radius: 2px;
+	/*
+	box-shadow: -0.25em 0 0.125em rgba(185, 186, 188, 0.9), inset -1px 0 1px #c9c9c9;
+	*/
+	background: repeating-linear-gradient(90deg, #535458, #535458 1px, transparent 1px, transparent 2px) no-repeat 50% 50%, linear-gradient(90deg, #818284, #9a9ba0);
+	background-size: 7px 65%, 100% 100%;
+	cursor: ns-resize;
+}
+.UIVSlider1 input[type='range']::-moz-range-thumb {
+  border-color: #454547;
+  width: 2.5em;
+  height: 0.625em;
+  border-radius: 0.625em;
+  box-shadow: -0.25em 0 0.125em rgba(185, 186, 188, 0.9), inset -1px 0 1px #c9c9c9;
+  background: repeating-linear-gradient(90deg, #535458, #535458 1px, transparent 1px, transparent 2px) no-repeat 50% 50%, linear-gradient(90deg, #818284, #9a9ba0);
+  background-size: 7px 65%, 100% 100%;
+  cursor: ns-resize;
+}
+.UIVSlider1 input[type='range']::-ms-thumb {
+  border-color: #454547;
+  width: 2.5em;
+  height: 0.625em;
+  border-radius: 0.625em;
+  box-shadow: -0.25em 0 0.125em rgba(185, 186, 188, 0.9), inset -1px 0 1px #c9c9c9;
+  background: repeating-linear-gradient(90deg, #535458, #535458 1px, transparent 1px, transparent 2px) no-repeat 50% 50%, linear-gradient(90deg, #818284, #9a9ba0);
+  background-size: 7px 65%, 100% 100%;
+  cursor: ns-resize;
+}
+
+.UIVSlider1 input[type='range']::-webkit-slider-runnable-track {
+  background: #cfd0d2;
+}
+.UIVSlider1 input[type='range']::-moz-range-track {
+  background: #cfd0d2;
+}
+.UIVSlider1 input[type='range']::-ms-track {
+  background: #cfd0d2;
+}
+.UIVSlider1 input[type='range']::-webkit-slider-thumb {
+  margin-top: -0.125em;
 }

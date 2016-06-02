@@ -236,7 +236,6 @@ function initBG() {
     for (var [step, stroke] of grid) {
         ctx.beginPath();
         for (var ix = 0; ix < w; ix += step) {
-            console.log(step, stroke, ix);
             ctx.moveTo(0, ix);
             ctx.lineTo(w, ix);
             ctx.moveTo(ix, 0);
@@ -303,7 +302,7 @@ function initBG() {
 <canvas style="width:40px;height:40px;display:none" width="80" height="80" id="bg-paint">
 </canvas>
     </div>
-    <div class="container bc_page" id="page_dia">
+    <div class="container bc_page auto_height" id="page_dia">
         <div class="row body">
             <div class="col-lg-2 left-side">
                 <ul class="list" id="clsList">
@@ -314,7 +313,7 @@ function initBG() {
             </div>
         </div>
     </div>
-    <div class="container bc_page" id="page_code">
+    <div class="container bc_page auto_height" id="page_code">
         
         <div class="container" id="error"></div>
 
@@ -342,7 +341,7 @@ function initBG() {
             </div>
         </div>
     </div>
-    <div class="container bc_page" id="page_params">
+    <div class="container bc_page auto_height" id="page_params">
         PARAMS
     </div>
 

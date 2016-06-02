@@ -1,6 +1,17 @@
 #@UI "Label" | UILabel<3>
-@UI { UILED led2_0-7 } | { UIDial dial_0-7 } | { UILED led_0-7 } | { UIDigits<3> digs_0-7 }
-@UI {"Key board" | UIKeyboard uiKeyboard }.framed
+#@UI { UILED led2_0-7 } | { UIDial dial_0-7 } | { UILED led_0-7 } | { UIDigits<3> digs_0-7 }
+#dial_0-7 => {x| x > 0 ? x : 0 } _0-7 => led_0-7
+#dial_0-7 => {x| x < 0 ? -x: 0 } _0-7 => led2_0-7
+#dial_0-7 => {x|x*999} _0-7 => digs_0-7
+
+@UI {"  c    d    f   g   a " | UIKeyboard uiKeyboard }.framed
+
+UIVSlider sli_0-3 => {x|x*99} _0-3 => UIDigits<2> digs_0-3
+
+@UI " A    D    S    R "
+@UI sli_0 | 1 | sli_1 | 1 | sli_2 | 1 | sli_3
+@UI digs_0 | 1 | digs_1 | 1 | digs_2 | 1 | digs_3
+
 
 SomeDial {
 	@UI UILED ledNeg | UIDial dial | UILED ledPos | UIDigits<3> digs
@@ -10,14 +21,11 @@ SomeDial {
 	dial -> POUT out
 }
 
-@UI {{"Quantity" | -5 | SomeDial d1} | SomeDial d2 "Q2" .with-title}
+@UI {{"Q... uantity" | -5 | SomeDial d1} | SomeDial d2 "Q2" .with-title}
 
 
 uiKeyboard, Keyboard -> allMidi -> uiKeyboard
 
-dial_0-7 => {x| x > 0 ? x : 0 } _0-7 => led_0-7
-dial_0-7 => {x| x < 0 ? -x: 0 } _0-7 => led2_0-7
-dial_0-7 => {x|x*999} _0-7 => digs_0-7
 
 @include ins-simple.bc
 

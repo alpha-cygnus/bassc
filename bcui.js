@@ -120,8 +120,20 @@ class UIBasis extends BC.BaseNode {
 	getId() {
 		return `ui_${BC._getObjId(this)}`;
 	}
-	getHTML() {
-		return `<div class="dial" id="${this.getId()}"></div>`;
+	getHTML(css) {
+		return `<div class="${this.getCSSClasses(css)}"
+			style="${this.getStyle(css)}"
+			id="${this.getId()}"
+			data-title="${this.title || this.name || this.id}">${this.getInnerHTML(css)}</div>`;
+	}
+	getCSSClasses(css) {
+		return `UI ${this.constructor.name} ${css}`;
+	}
+	getStyle(css) {
+		return '';
+	}
+	getInnerHTML() {
+		return '';
 	}
 	onStartUI() {
 		this.elem = document.getElementById(this.getId());
@@ -138,9 +150,9 @@ class UIDial extends UIBasis {
 		if (!this.elem) return 0;
 		return getDialValue(this.elem);
 	}
-	getHTML() {
-		return `<div class="UI UIDial" id="${this.getId()}"></div>`;
-	}
+	// getHTML() {
+	// 	return `<div class="UI UIDial" id="${this.getId()}"></div>`;
+	// }
 }
 
 class UIDigits extends UIBasis {
@@ -180,8 +192,11 @@ class UIDigits extends UIBasis {
 		else $(this.elem).addClass('positive').removeClass('negative');
 		this.prevValue = v;
 	}
-	getHTML() {
-		var html = [`<div class="UI UIDigits" id="${this.getId()}" style="width:${this.numDigits*10}px;">`];
+	getStyle() {
+		return `width:${this.numDigits*10}px;`;
+	}
+	getInnerHTML() {
+		var html = []; //`<div class="UI UIDigits" id="${this.getId()}" style="width:${this.numDigits*10}px;">`];
 		for (var i = 0; i < this.numDigits; i++) {
 			html.push(`<div class="seven-seg _${i}">
 				<span class="t m"></span>
@@ -194,8 +209,33 @@ class UIDigits extends UIBasis {
 				<span class="b m"></span>
 			</div>`);
 		};
-		html.push('</div>');
+		//html.push('</div>');
 		return html.join('');
+	}
+}
+
+class UIHexDigits extends UIDigits {
+	setDigits(v) {
+		if (!this.elem) return;
+		v = Math.round(v);
+		if (this.prevValue == v) return;
+		var s = (v || 0).toString(16);
+		var mc = this.numDigits;
+		if (v < 0) {
+			//mc--;
+			s = (-v).toString(16);
+		}
+		if (s.length > mc) s = s.replace(/./g, 'f');
+		while (s.length < mc) s = '0' + s;
+		//if (v < 0) s = '-' + s;
+		for (var i = 0; i < this.numDigits; i++) {
+			var $d = $(this.elem).find('._' + i).removeClass('minus null d-0 d-1 d-2 d-3 d-4 d-5 d-6 d-7 d-8 d-9 d-a d-b d-c d-d d-e d-f');
+			if (s[i] == '-') $d.addClass('minus');
+			else $d.addClass('d-' + s[i]);
+		}
+		if (v < 0) $(this.elem).removeClass('positive').addClass('negative');
+		else $(this.elem).addClass('positive').removeClass('negative');
+		this.prevValue = v;
 	}
 }
 
@@ -222,9 +262,12 @@ class UIValue extends UIBasis {
 		$(this.elem).html(s);
 		this.prevValue = v;
 	}
-	getHTML() {
-		return `<div class="UI UIValue" style="width:${this.width*20}px;" id="${this.getId()}"></div>`;
+	getStyle() {
+		return `width:${this.width*20}px;`;
 	}
+	// getHTML() {
+	// 	return `<div class="UI UIValue" style="width:${this.width*20}px;" id="${this.getId()}"></div>`;
+	// }
 }
 
 class UILED extends UIBasis {
@@ -257,9 +300,12 @@ class UILED extends UIBasis {
 			`rgb(${Math.round(this.r*v*255)}, ${Math.round(this.g*v*255)}, ${Math.round(this.b*v*255)})`);
 		this.prevValue = v;
 	}
-	getHTML() {
-		return `<div class="UI UILED" style="width:${this.width*20}px;" id="${this.getId()}"></div>`;
+	getStyle() {
+		return `width:${this.width*20}px;`;
 	}
+	// getHTML() {
+	// 	return `<div class="UI UILED" style="width:${this.width*20}px;" id="${this.getId()}"></div>`;
+	// }
 }
 
 function isMidiKeys(keyNoteStream) {
@@ -338,7 +384,7 @@ class UIKeyboard extends UIBasis {
 		this.inp = new BC.MIDIIN(this, []);
 		this.range = [24, 113];
 	}
-	getHTML(css) {
+	getInnerHTML(css) {
 		function isWhite(n) {
 			return {
 				 0: ['C', 'bl'],
@@ -350,8 +396,8 @@ class UIKeyboard extends UIBasis {
 				11: ['B', 'w1 br']
 			}[n%12];
 		}
+		//<div class="UIKeyboard ${css}" id="${this.getId()}" data-title="${this.title || this.name || this.id}">
 		var html = `
-		<div class="UIKeyboard ${css}" id="${this.getId()}" data-title="${this.title || this.name || this.id}">
 			<div class="kbd-top"></div>
 			<div class="kbd" style="display:block">
 				<div class="kbd-up">`
@@ -384,11 +430,12 @@ class UIKeyboard extends UIBasis {
 			}
 		}
 
-		html += `</div></div>`;
+		html += `</div>`; //</div>`;
 		return html;
 	}
 	onStartUI() {
-		this.elem = document.getElementById(this.getId());
+		// this.elem = document.getElementById(this.getId());
+		super.onStartUI(...arguments);
 		var $elem = $(this.elem);
 
 		var notePressed = null;
@@ -430,11 +477,16 @@ class UIButton extends UIBasis {
 		if (!this.elem) return 0;
 		return $(this.elem).hasClass('on');
 	}
-	getHTML() {
-		return `<div class="UI UIButton glyphicon glyphicon-play" id="${this.getId()}"></div>`;
+	// getHTML() {
+	// 	return `<div class="UI UIButton glyphicon glyphicon-play" id="${this.getId()}"></div>`;
+	// }
+	getCSSClasses(css) {
+		css += ' glyphicon ' + css.replace(/\b([\w-]+)\b/g, 'glyphicon-$1');
+		return super.getCSSClasses(css);
 	}
 	onStartUI() {
-		this.elem = document.getElementById(this.getId());
+		// this.elem = document.getElementById(this.getId());
+		super.onStartUI(...arguments);
 		$(this.elem).on('click', function() { $(this).toggleClass('on') });
 	}
 }
@@ -455,14 +507,17 @@ class UIAbstractScope extends UIBasis {
 		this.bgHeight = 264;
 		this.mode = 'exp';
 	}
-	getHTML() {
-		return `<div class="UI UIScope ${this.constructor.name}" id="${this.getId()}">
+	getInnerHTML() {
+		return `
 			<canvas class="UICanvas scope-bg" width="${this.width}" height="${this.bgHeight}"></canvas>
 			<canvas class="UICanvas scope-data" width="${this.width}" height="${this.height}"></canvas>
-			</div>`;
+			`;
+	}
+	getCSSClasses(css) {
+		return super.getCSSClasses(css) + ' UIScope';
 	}
 	onStartUI() {
-		this.elem = $('#' + this.getId())[0];
+		super.onStartUI(...arguments);
 		this.dataCanvas = $('canvas.scope-data', this.elem)[0];
 		this.bgCanvas = $('canvas.scope-bg', this.elem)[0];
 		this.ctx = this.dataCanvas.getContext('2d');
@@ -556,11 +611,11 @@ class UISpectrograph extends UIAbstractScope {
 		var maxf = BC.core.context.sampleRate;
 		var minn = this.minNote;
 		var cntn = this.maxNote - this.minNote;
-		var df = maxf / maxj;
+		var df = maxf / 2 / maxj;
 		function getJi(i) {
 			var n = i/w*cntn + minn;
 			var f = Math.pow(2, (n - 69)/12)*440;
-			return f/df - 1;
+			return f/df;
 		}
 		function getIj(j) {
 			var f = (j + 1)*df;
@@ -691,7 +746,8 @@ class UISamplograph extends UIBasis {
 			width="${this.width}" height="${this.height}"></canvas>`;
 	}
 	onStartUI() {
-		this.elem = document.getElementById(this.getId());
+		//this.elem = document.getElementById(this.getId());
+		super.onStartUI(...arguments);
 		// this.backBuf = document.createElement('canvas');
 		// this.backCtx = this.backBuf.getContext('2d');
 		this.ctx = this.elem.getContext('2d');
@@ -775,7 +831,8 @@ class UIScope extends UIBasis {
 			width="${this.width}" height="${this.height}"></canvas>`;
 	}
 	onStartUI() {
-		this.elem = document.getElementById(this.getId());
+		// this.elem = document.getElementById(this.getId());
+		super.onStartUI(...arguments);
 		this.ctx = this.elem.getContext('2d');
 		
 		this.ctx.strokeStyle = '#4F4';
@@ -816,13 +873,12 @@ class UILabel extends UIBasis {
 	constructor() {
 		super(...arguments);
 	}
-	getHTML() {
+	getInnerHTML() {
 		var slabel = this.title || this.name || this.id;
+		
 		//style="width: ${slabel.length*10}px;"
-		return [`<div class="UI ${this.constructor.name}" id="${this.getId()}">`]
-			.concat(slabel.split('').map(c => `<span>${c}</span>`))
-			.concat(['</div>'])
-			.join('');
+		// return slabel.split('').map((c, i) => `<span ${c == ' ' && (i == 0 || i == slabel.length - 1) ? 'class="half"': ''}>${c}</span>`).join('');
+		return slabel.split('').map((c, i) => `<span ${c.match(/[ ,.:;'"|!]/) ? 'class="half"': ''}>${c}</span>`).join('');
 	}
 }
 
@@ -839,7 +895,23 @@ class UIHSpacing extends UIBasis {
 class UIHLine extends UIHSpacing {
 }
 
-
+class UIVSlider extends UIBasis {
+	constructor(parent, [def]) {
+		super(...arguments);
+		this.out = new BC.POUT(this, []);
+		this.out.produceFromField(this, 'value');
+		this.max = 999;
+		this.def = def || 0;
+	}
+	get value() {
+		if (!this.elem) return 0;
+		var v = $('input', this.elem)[0].value;
+		return (this.max - v)/this.max;
+	}
+	getInnerHTML() {
+		return `<input type="range" min="0" max="${this.max}" value="${(1 - this.def)*this.max}" />`;
+	}
+}
 
 BC.ui = new UIManager();
 
@@ -850,6 +922,7 @@ Object.assign(BC, {
 	UIHLine,
 	UIDial,
 	UIDigits,
+	UIHexDigits,
 	UIValue,
 	UILED,
 	Keyboard,
@@ -859,6 +932,7 @@ Object.assign(BC, {
 	UISamplograph,
 	UIScope,
 	UISpectrum,
+	UIVSlider,
 });
 
 })(this);

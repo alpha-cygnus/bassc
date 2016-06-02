@@ -191,6 +191,10 @@ UIDigits {
 	PIN inp
 }
 
+UIHexDigits {
+	PIN inp
+}
+
 UIValue {
 	PIN inp
 }
@@ -222,6 +226,14 @@ UIScope {
 
 UISpectrum {
 	AIN inp
+}
+
+UIVSlider {
+	POUT out
+}
+
+UIHSlider {
+	POUT out
 }
 
 MidiHub {
