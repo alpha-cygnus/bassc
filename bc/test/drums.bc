@@ -1,0 +1,25 @@
+@use ins/drums
+
+@UI UIButton btnPlay | UILED ledPlaying
+
+btnPlay -> ledPlaying
+
+Clock -> Count tickCount -> {t|floor(t/24)} step -> UIValue tv
+
+step -> <
+	0q0101
+	0q0200
+	0q0101
+	0q0200
+	0q1101
+	0q0200
+	0q0101
+	0q0202
+> -> {*} gate -> QDemux dmx[0-3] => {t|t/3} _0-3 => UILED dmx_0-3
+
+btnPlay -> gate
+btnPlay -> [reset]tickCount
+
+dmx[0-3] => (BD -> *15), (SN -> *1), (CHH -> *2), (OHH -> *2) -> *0.2 -> preDest
+
+@UI tv | dmx_0-3

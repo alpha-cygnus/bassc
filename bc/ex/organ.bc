@@ -1,0 +1,25 @@
+@use ins/organ
+@use ins/simple
+
+@UI "Example: Drawbar organ" .page-title
+
+DrawBar {
+	@UI UILED led
+	@UI UIVSlider<0.5> bar | " "
+	@UI UIHexDigits<2> dig | " "
+	bar -> ({x|x*128} -> dig), led, POUT
+}
+
+@UI -6 | " Draw  bars " | -6
+@UI 1 | "-1  0  +1 +2 +3 +4 +5 +6  <- Oct"
+@UI 1 | DrawBar drawBar_0-7
+@UI -22 | " "
+
+@UI UIDial d1 | UIHexDigits<2> h1
+
+d1 -> {x|x*20} -> h1
+
+allMidi -> Sine8Organ organ -> preDest
+
+drawBar_0-7 => [bar_0-7]organ
+

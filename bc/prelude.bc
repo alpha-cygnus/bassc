@@ -1,0 +1,262 @@
+#-- basic
+
+@builtin Const {
+	AIN inp, i2
+	AOUT out
+	POUT pout
+}
+
+@builtin Osc {
+	@enum SINE, SIN = 0, SQUARE, SAW, TRI
+	AIN detune, freq
+	AOUT out
+	PIN trigger
+}
+
+@builtin Env {
+	AIN inp
+	AOUT out
+	PIN trigger
+	PIN attack, decay, sustain, release
+}
+
+@builtin ADSR {
+	AIN inp
+	AOUT out
+	PIN trigger
+	PIN attack, decay, sustain, release
+}
+
+@builtin Gain {
+	AIN inp, gain
+	AOUT out
+}
+
+@builtin Delay {
+	AIN inp
+	AOUT out
+	AIN time
+}
+
+@builtin PINLog {
+	PIN inp
+	POUT out
+}
+
+@builtin P2A {
+	PIN inp
+	AOUT out
+}
+
+@builtin Keyboard {
+	MIDIOUT out
+}
+
+@builtin Note2CV {
+	PIN inp
+	AOUT out
+}
+
+@builtin MidiArpeggio {
+	MIDIIN inp
+	PIN clock
+	AOUT out
+	PIN octaves
+	PIN mode # up, down, updown, downup, random
+}
+
+@builtin MidiTrigger {
+	@enum BOOL, RETRIG, COUNT
+	MIDIIN inp
+	POUT out
+	PIN mode
+}
+
+@builtin MidiNote {
+	@enum MAX, MIN, LAST, FIRST
+	MIDIIN inp
+	POUT out
+	PIN priority # min, max, first, last
+}
+
+@builtin Filter {
+	@enum LOWPASS, HIGHPASS, BANDPASS, LOWSHELF, HIGHSHELF, PEAKING, NOTCH, ALLPASS
+		, LP = 0, HP, BP, LS, HS
+	AIN inp
+	AOUT out
+	PIN type
+	AIN freq
+	AIN q
+	AIN detune
+}
+
+@builtin Clock {
+	POUT out
+}
+
+@builtin Dest {
+	AIN inp
+	AIN volume
+	AOUT out
+}
+
+@builtin Pan {
+	AIN inp
+	AIN pan
+	AOUT out
+}
+
+@builtin Noise {
+	AOUT out
+}
+
+# -- UI
+@builtin Pot {
+	POUT value
+	#@init caption
+}
+
+@builtin Slider {
+	POUT value
+	#@init pos
+}
+
+@builtin DropDown {
+	POUT value
+	#@init values
+}
+
+@builtin Scope {
+	AIN in_0-3
+}
+
+
+# -- Automation
+@builtin LFO {
+	PIN trigger
+	PIN freq
+	PIN form # sine, triangle, pulse
+	PIN skew
+	POUT out
+}
+
+@builtin Vec {
+	PIN inp
+	POUT pout
+	MIDIOUT midiOut
+}
+
+@builtin BinDemux {
+	PIN inp
+	POUT out_0-15
+}
+
+@builtin QDemux {
+	PIN inp
+	POUT out_0-15
+}
+
+@builtin Count {
+	PIN inp
+	PIN reset
+	POUT out
+}
+
+@builtin Curve {
+	PIN trigger
+	AOUT out
+}
+
+@builtin WebMidi {
+	MIDIOUT out
+}
+
+@builtin UILabel {
+	
+}
+
+@builtin UIHLine {
+	
+}
+
+@builtin UIHSpacing {
+	
+}
+
+@builtin UIDial {
+	POUT out
+}
+
+@builtin UIDigits {
+	PIN inp
+}
+
+@builtin UIHexDigits {
+	PIN inp
+}
+
+@builtin UIValue {
+	PIN inp
+}
+
+@builtin UILED {
+	PIN inp
+}
+
+@builtin UIButton {
+	POUT out
+}
+
+@builtin UIKeyboard {
+	MIDIIN inp
+	MIDIOUT out
+}
+
+@builtin UISpectrograph {
+	AIN inp
+}
+
+@builtin UISamplograph {
+	AIN inp
+}
+
+@builtin UIScope {
+	AIN inp
+}
+
+@builtin UISpectrum {
+	AIN inp
+}
+
+@builtin UIVSlider {
+	POUT out
+}
+
+@builtin UIHSlider {
+	POUT out
+}
+
+@builtin MidiHub {
+	@init filterProc
+	MIDIIN inp
+	MIDIOUT out
+}
+
+@builtin MidiExtract {
+	MIDIIN inp
+	POUT t, c, n, v
+}
+
+@builtin MidiPoly {
+	MIDIIN inp
+	MIDIOUT out_0-15
+}
+
+@builtin MidiCC {
+	MIDIIN inp
+	POUT out
+}
+
+@builtin MidiLog {
+	MIDIIN inp
+}

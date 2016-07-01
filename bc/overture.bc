@@ -1,0 +1,8 @@
+Note2Detune {
+	PIN -> {n|(n - 69)*100} -> P2A -> AOUT
+}
+;
+
+*preDest -> Dest theDest
+
+MidiHub allMidi
