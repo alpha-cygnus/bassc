@@ -2,7 +2,7 @@
 	"include BCPU";
 }
 
-S = head:statement? tail:(ST_SEP+ s:statement { return s; })* ws { return Main([head].concat(tail)); }
+S = head:statement? tail:(ST_SEP+ s:statement { return s; })* ws { return Module(options.moduleName, [head].concat(tail)); }
 
 statement = unit
 	/ chain

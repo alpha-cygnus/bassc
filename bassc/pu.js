@@ -38,7 +38,7 @@ define(['bassc/core', 'bassc/meta'], function(BC, meta) {
 			meta.error(msg, this.location);
 		}
 	}
-	class Module extends SyntaxElem {
+	class Unit extends SyntaxElem {
 		constructor(name, items, init) {
 			super();
 			this.init = init;
@@ -48,14 +48,14 @@ define(['bassc/core', 'bassc/meta'], function(BC, meta) {
 		toMeta() {
 			var _cc = meta.byName(this.name);
 			if (_cc) this.error(`${this.name} is already defined`);
-			_cc = meta.newModule(this.name);
+			_cc = meta.newUnit(this.name);
 			if (this.init) this.init.toMeta(_cc);
 			for (var item of this.items) {
 				item.toMeta(_cc);
 			}
 		}
 	}
-	class ModuleInit extends SyntaxElem {
+	class UnitInit extends SyntaxElem {
 		constructor(items) {
 			super();
 			this.items = items;
@@ -66,7 +66,7 @@ define(['bassc/core', 'bassc/meta'], function(BC, meta) {
 			}
 		}
 	}
-	class ModuleInitItem extends SyntaxElem {
+	class UnitInitItem extends SyntaxElem {
 		constructor(ids, cons) {
 			super();
 			this.ids = ids;
@@ -431,7 +431,7 @@ define(['bassc/core', 'bassc/meta'], function(BC, meta) {
 		}
 	}
 	
-	class Main extends Module {
+	class Main extends Unit {
 		constructor(items) {
 			super('Main', items);
 		}
@@ -441,6 +441,9 @@ define(['bassc/core', 'bassc/meta'], function(BC, meta) {
 				item.toMeta(mod);
 			}
 		}
+	}
+
+	class Module extends Unit {
 	}
 
 	function showError(msg) {
@@ -603,9 +606,9 @@ define(['bassc/core', 'bassc/meta'], function(BC, meta) {
 	return Object.assign(BCPU, {
 		cls: {
 			SyntaxElem,
-			Module,
-			ModuleInit,
-			ModuleInitItem,
+			Unit,
+			UnitInit,
+			UnitInitItem,
 			EnumDef,
 			EnumValDef,
 			Chain,
@@ -631,6 +634,7 @@ define(['bassc/core', 'bassc/meta'], function(BC, meta) {
 			ParamRef,
 			ParamEnum,
 			Main,
+			Module,
 		},
 		fun: {
 			noteToInt,
