@@ -1,5 +1,5 @@
-@use ins/organ
-@use ins/simple
+@include ins/organ
+@include ins/simple
 
 @UI "Example: Drawbar organ" .page-title
 

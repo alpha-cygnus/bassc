@@ -45,10 +45,10 @@ define(['bassc/core', 'bassc/meta'], function(BC, meta) {
 			this.name = name;
 			this.items = items;
 		}
-		toMeta() {
-			var _cc = meta.byName(this.name);
+		toMeta(_m) {
+			var _cc = _m.unitByName(this.name);
 			if (_cc) this.error(`${this.name} is already defined`);
-			_cc = meta.newUnit(this.name);
+			_cc = _m.newUnit(this.name);
 			if (this.init) this.init.toMeta(_cc);
 			for (var item of this.items) {
 				item.toMeta(_cc);
@@ -84,6 +84,7 @@ define(['bassc/core', 'bassc/meta'], function(BC, meta) {
 			//return {ids, _ct};
 		}
 	}
+
 	class EnumDef extends SyntaxElem {
 		constructor(vals) {
 			super();
@@ -141,12 +142,14 @@ define(['bassc/core', 'bassc/meta'], function(BC, meta) {
 		}
 	}
 	class Include extends SyntaxElem {
-		constructor(name) {
+		constructor(name, type) {
 			super();
 			this.name = name;
+			this.type = type || 'bc';
 		}
-		toMeta() {
-			processSource(this.name);
+		toMeta(_m) {
+			//processSource(this.name);
+			_m.addInclude(name);
 		}
 	}
 	class Chain extends SyntaxElem {
@@ -431,19 +434,29 @@ define(['bassc/core', 'bassc/meta'], function(BC, meta) {
 		}
 	}
 	
-	class Main extends Unit {
-		constructor(items) {
-			super('Main', items);
-		}
-		toMeta() {
-			var mod = meta.getMain();
-			for (var item of this.items) {
-				item.toMeta(mod);
-			}
-		}
-	}
+	// class Main extends Unit {
+	// 	constructor(items) {
+	// 		super('Main', items);
+	// 	}
+	// 	toMeta() {
+	// 		var mod = meta.getMain();
+	// 		for (var item of this.items) {
+	// 			item.toMeta(mod);
+	// 		}
+	// 	}
+	// }
 
 	class Module extends Unit {
+		getIncludes() {
+			return this.items.filter(i => i instanceof Include);
+		}
+		toMeta(meta) {
+			var _m = meta.newModule(this.name);
+			for (var item of this.items) {
+				item.toMeta(_m);
+			}
+			return _m;
+		}
 	}
 
 	function showError(msg) {
@@ -496,7 +509,7 @@ define(['bassc/core', 'bassc/meta'], function(BC, meta) {
 	// 	return parser;
 	// }
 	
-	// var sources = {};
+	var sources = {};
 	
 	// function getSourceType(name) {
 	// 	var m;
@@ -633,7 +646,7 @@ define(['bassc/core', 'bassc/meta'], function(BC, meta) {
 			ParamProc,
 			ParamRef,
 			ParamEnum,
-			Main,
+			//Main,
 			Module,
 		},
 		fun: {
@@ -644,7 +657,7 @@ define(['bassc/core', 'bassc/meta'], function(BC, meta) {
 		run,
 		// grammars,
 		// parsers,
-		// sources,
+		sources,
 		// getSourceType,
 		// requestSource,
 		// addGrammar,

@@ -40,6 +40,10 @@ class Meta {
 		var res = [`class ${this.name} extends ${this.getBase()} {`];
 		res.push('\tconstructor(parent, params) {');
 		res.push('\t\tsuper(...arguments);');
+		res.push('\t\tthis.init(...arguments);');
+		// this.compileCons(res);
+		res.push('\t}');
+		res.push('\tinit(params) {');
 		this.compileCons(res);
 		res.push('\t}');
 
@@ -101,13 +105,13 @@ class MetaUnit extends Meta {
 			var node = this.nodes[nn];
 			var ps = node.params || [];
 			if (node.opts.global) {
-				res.push(`\t\tthis.${nn} = BC.main.${nn};`);
+				res.push(`\t\tthis.${nn} = _nodes.${nn};`);
 			}
 			else if (node.opts.init) {
 				res.push(`\t\tthis.${nn} = (typeof a_${nn} === 'undefined') ? new BC.${node.type.name}(this, [${ps.join(', ')}]) : a_${nn};`);
 			}
 			else {
-				res.push(`\t\tthis.${nn} = new BC.${node.type.name}(this, [${ps.join(', ')}]);`);
+				res.push(`\t\tthis.${nn} = new _cls.${node.type.name}(this, [${ps.join(', ')}]);`);
 				if (node.name && !node.name.match(/^_/)) {
 					res.push(`\t\tthis.${nn}.name = '${node.name}';`);
 				}
@@ -123,7 +127,7 @@ class MetaUnit extends Meta {
 	}
 	compileGetHTML(res) {
 		res.push(`\t\tvar html = [];`);
-		res.push('html.push(`<div class="UI ${this.id} ${this.constructor.name} ${styles}" id="${this.getUIId()}" data-title="${this.title || this.name || this.id}">`);');
+		res.push('\t\thtml.push(`<div class="UI ${this.id} ${this.constructor.name} ${styles}" id="${this.getUIId()}" data-title="${this.title || this.name || this.id}">`);');
 		res.push(`\t\tvar s;`);
 		var self = this;
 		function compileLayout(ly, isVert) {
@@ -409,12 +413,81 @@ class MainMeta extends MetaUnit {
 	}
 }
 
+class MetaModule extends MetaUnit {
+	constructor(name) {
+		super(name);
+		this.includes = [];
+		this.units = {};
+	}
+	unitByName(name) {
+		return this.units[name];
+	}
+	newUnit(name) {
+		var u = newUnit(name);
+		this.addUnit(u);
+		return u;
+	}
+	addUnit(u) {
+		this.units[u.name] = u;
+	}
+	compileToSource() {
+		var incs = ['bassc/core', 'bassc/meta'].concat(this.includes.map(i => `load/bc!bc/${i.name}`));
+		
+		var res = [`define(['${incs.join("','")}'], function(BC, meta) {`];
+		res.push('var _cls = {};');
+		
+		for (var name in this.units) {
+			var u = this.unitByName(name);
+			var us = u.compileToSource();
+			res.push('_cls.' + name + '=' + us);
+		}
+		
+		
+		res.push('return class {');
+		res.push('\tconstructor(parent, params) {');
+		res.push('\t\tsuper(...arguments);');
+		res.push('\t\tthis.init(...arguments);');
+		// this.compileCons(res);
+		res.push('\t}');
+		res.push('\tinit(params) {');
+		this.compileCons(res);
+		res.push('\t}');
+
+		res.push('\tgetHTML(styles) {');
+		this.compileGetHTML(res);
+		res.push('\t}');
+
+		res.push('\tonStartUI() {');
+		this.compileOnStartUI(res);
+		res.push('\t}');
+		
+		this.compileAdditional(res);
+
+		res.push('};');
+		
+		res.push('})');
+		//res.push(`BC.${this.name} = ${this.name};`)
+		return res.join('\n');
+	}
+}
+
+class MetaError extends Meta {
+	constructor(error) {
+		super();
+		this.error = error;
+	}
+}
+
 var newUnit = function newCls(name) {
 	return new MetaUnit(name);
 };
 
 var newProc = function newProc(proc) {
 	return new MetaProc(proc);
+};
+
+var newModule = function newModule(name) {
+	return new MetaModule(name);
 };
 
 (function (types){
@@ -428,7 +501,7 @@ var newProc = function newProc(proc) {
 		bcMeta[t + 'OUT'].addNode({type: bcMeta[t + 'IN']}, 'inp');
 		bcMeta[t + 'OUT'].addNode({type: bcMeta[t + 'OUT']}, 'out');
 	}
-})(['A', 'P', 'MIDI'])
+})(['A', 'P', 'MIDI']);
 
 const mainMeta = new MainMeta();
 
@@ -455,6 +528,7 @@ return BC.meta = {
 
 	newUnit,
 	newProc,
+	newModule,
 	error,
 	
 	byName(name) {
