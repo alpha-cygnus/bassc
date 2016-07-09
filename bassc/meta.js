@@ -505,7 +505,7 @@ var newModule = function newModule(name) {
 
 const mainMeta = new MainMeta();
 
-class MetaError {
+class MetaModuleError {
 	constructor(message, location) {
 		this.message = message;
 		this.location = location;
@@ -521,6 +521,8 @@ return BC.meta = {
 	MetaUnit,
 	MetaProc,
 	MetaError,
+	MetaModule,
+	MetaModuleError,
 
 	mainName,
 	main: mainMeta,
