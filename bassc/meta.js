@@ -97,6 +97,13 @@ class MetaUnit extends Meta {
 		this.melodies = [];
 		this.uiStyles = {};
 	}
+	getType(name) {
+		return this.unitByName(name);
+	}
+	unitByName(name) {
+		if (this.units && this.units[name]) return this.units[name];
+		if (this.parent) return this.parent.unitByName(name);
+	}
 	compileCons(res) {
 		if (this.initList.length > 0) {
 			res.push('\t\tvar [' + this.initList.map(nn => `a_${nn}`).join(', ') + '] = params;');
@@ -168,12 +175,12 @@ class MetaUnit extends Meta {
 	fixId(tp, id, onError) {
 		var type = tp.type;
 		var opts = tp.opts || {};
-		if (opts.global) {
-			var mn = BC.meta.main.nodes[id];
-			if (!mn) {
-				return onError(`Global id not found: ${id}`);
-			}
-		}
+		// if (opts.global) {
+		// 	var mn = BC.meta.main.nodes[id];
+		// 	if (!mn) {
+		// 		return onError(`Global id not found: ${id}`);
+		// 	}
+		// }
 		var tn = type.name;
 		var ci = this.uses[tn] || 0;
 		if (!id) id = '_' + tn + '_' + (++ci);
@@ -206,6 +213,11 @@ class MetaUnit extends Meta {
 		}
 		return id;
 	}
+	addNodes(nodes) {
+		for (var {type, id, title, params, opts} of nodes) {
+			this.addNode({type, params, opts}, id, title);
+		}
+	}
 	addInp(inp) {
 		inp.inpIdx = this.inpList.push(inp.id) - 1;
 		inp.inpType = inp.type.inpType;
@@ -220,6 +232,21 @@ class MetaUnit extends Meta {
 	}
 	addLayout(l) {
 		this.layouts.push(l);
+	}
+	addLayouts(ls) {
+		for (var l of ls) {
+			this.addLayout(l);
+		}
+	}
+	addLink(n0, p0, n1, p1, t) {
+		let lid = [n0, p0, p1, n1];
+		this.links[lid.join(',')] = { n0, n1, p0, p1, t };
+	}
+	addLinks(links) {
+		for (var lid in links) {
+			var { n0, n1, p0, p1, t } = links[lid];
+			this.addLink(n0, p0, n1, p1, t);
+		}
 	}
 	addMelody(m) {
 		this.melodies.push(m);
@@ -429,6 +456,12 @@ class MetaModule extends MetaUnit {
 	}
 	addUnit(u) {
 		this.units[u.name] = u;
+		u.parent = this;
+	}
+	addUnits(us) {
+		for (var un of us) {
+			this.addUnit(us[un]);
+		}
 	}
 	compileToSource() {
 		var incs = ['bassc/core', 'bassc/meta'].concat(this.includes.map(i => `load/bc!bc/${i.name}`));

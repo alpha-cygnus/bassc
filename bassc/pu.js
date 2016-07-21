@@ -150,6 +150,21 @@ define(['bassc/core', 'bassc/meta'], function(BC, meta) {
 		toMeta(_m) {
 			//processSource(this.name);
 			_m.addInclude(name);
+			var subMeta = require('load/bcmeta!' + name);
+			if (subMeta) {
+				if (subMeta.units) {
+					_m.addUnits(subMeta.units, subMeta);
+				}
+				if (subMeta.layouts) {
+					_m.addLayouts(subMeta.layouts, subMeta);
+				}
+				if (subMeta.nodes) {
+					_m.addNodes(subMeta.modes, subMeta);
+				}
+				if (subMeta.links) {
+					_m.addLinks(subMeta.links, subMeta);
+				}
+			}
 		}
 	}
 	class Chain extends SyntaxElem {
@@ -211,9 +226,10 @@ define(['bassc/core', 'bassc/meta'], function(BC, meta) {
 				}
 
 
-				let lid = [n0, p0, p1, n1];
+				// let lid = [n0, p0, p1, n1];
 
-				_cc.links[lid.join(',')] = { n0, n1, p0, p1, t: t0 };
+				// _cc.links[lid.join(',')] = { n0, n1, p0, p1, t: t0 };
+				_cc.addLink(n0, p0, n1, p1, t);
 			}
 			if (this.par) {
 				var olen = outs.length;
@@ -331,7 +347,7 @@ define(['bassc/core', 'bassc/meta'], function(BC, meta) {
 			this.params = params;
 		}
 		toMeta(_cc) {
-			var m = meta.byName(this.name);
+			var m = _cc.getType(this.name); //meta.byName(this.name);
 			if (!m) this.error(`Type ${this.name} not defined`);
 			var _ct = { type: m };
 			_ct.params = (this.params || []).map(p => p.toMeta(_cc, _ct)).reduce((a, b) => a.concat(b), []);
@@ -363,11 +379,11 @@ define(['bassc/core', 'bassc/meta'], function(BC, meta) {
 			super('Vec', params);
 		}
 	}
-	class ConsGlobal extends Cons {
-		toMeta(_cc) {
-			return {type: '@global', params: [], opts: { global: 1 }};
-		}
-	}
+	// class ConsGlobal extends Cons {
+	// 	toMeta(_cc) {
+	// 		return {type: '@global', params: [], opts: { global: 1 }};
+	// 	}
+	// }
 	class Proc extends Cons {
 		constructor(params, body, init, outs) {
 			super();
